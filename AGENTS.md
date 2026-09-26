@@ -27,7 +27,9 @@ this project's context.
 ### Language
 
 All code, identifiers, documentation and commit messages are in English. UI
-copy is written in English first, then translated to Uzbek and Russian. Write
+copy is written in English first, then translated to Uzbek (Latin script) and
+Russian. Web strings live in `apps/web/src/i18n/{en,uz,ru}.ts`, bot strings in
+`apps/bot/src/i18n.ts`. A string added to one locale is added to all three. Write
 simply. Short sentences, plain words, no marketing tone.
 
 ### Comments

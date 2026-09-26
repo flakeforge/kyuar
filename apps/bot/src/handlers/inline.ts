@@ -3,6 +3,7 @@ import { InlineKeyboard } from "grammy";
 import type { Bot, InlineQueryResultBuilder } from "grammy";
 
 import { defaultRequest, imageUrl, miniAppUrl, startAppUrl } from "../config";
+import { botMessages } from "../i18n";
 
 const CACHE_SECONDS = 60;
 const RESULT_LIMIT = 8;
@@ -15,12 +16,13 @@ const RESULT_LIMIT = 8;
 export function registerInline(bot: Bot) {
   bot.on("inline_query", async (ctx) => {
     const input = ctx.inlineQuery.query.trim();
+    const t = botMessages(ctx.from.language_code);
 
     if (!input) {
       await ctx.answerInlineQuery([], {
         cache_time: CACHE_SECONDS,
         button: {
-          text: "Open the kyuar editor",
+          text: t.openEditorInline,
           web_app: { url: miniAppUrl() },
         },
       });
@@ -41,13 +43,13 @@ export function registerInline(bot: Bot) {
         photo_height: 1024,
         title: theme.name,
         caption: input,
-        reply_markup: new InlineKeyboard().url("Edit in kyuar", startAppUrl(input)),
+        reply_markup: new InlineKeyboard().url(t.editInKyuar, startAppUrl(input)),
       };
     });
 
     await ctx.answerInlineQuery(results, {
       cache_time: CACHE_SECONDS,
-      is_personal: false,
+      is_personal: true,
     });
   });
 }

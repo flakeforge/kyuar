@@ -1,4 +1,4 @@
-import { APP_URL, getBot, imageUrl, startAppUrl } from "@kyuar/bot";
+import { APP_URL, botMessages, getBot, imageUrl, startAppUrl } from "@kyuar/bot";
 import { qrRequestSchema, shareRequestSchema, type ShareRequest } from "@kyuar/shared";
 import { NextResponse } from "next/server";
 
@@ -41,6 +41,7 @@ export async function POST(request: Request) {
   if (!parsed.success) return NextResponse.json({ error: "Invalid QR options" }, { status: 400 });
 
   const { title, data } = parsed.data;
+  const t = botMessages(auth.user.language_code);
 
   try {
     const url = await photoUrl(parsed.data);
@@ -55,10 +56,10 @@ export async function POST(request: Request) {
         thumbnail_url: url,
         photo_width: 1024,
         photo_height: 1024,
-        title: title ?? "QR code",
+        title: title ?? t.shareTitle,
         caption: data.slice(0, 900),
         reply_markup: {
-          inline_keyboard: [[{ text: "Make your own", url: startAppUrl() }]],
+          inline_keyboard: [[{ text: t.makeYourOwn, url: startAppUrl() }]],
         },
       },
       { allow_user_chats: true, allow_group_chats: true, allow_channel_chats: true },

@@ -75,6 +75,15 @@ export function setHeaderColor(color: string) {
   applyHeaderColor();
 }
 
+export function telegramLanguage(): string | undefined {
+  if (!started) return undefined;
+  try {
+    return retrieveLaunchParams().tgWebAppData?.user?.language_code;
+  } catch {
+    return undefined;
+  }
+}
+
 export function rawInitData(): string | undefined {
   if (!started) return undefined;
   try {

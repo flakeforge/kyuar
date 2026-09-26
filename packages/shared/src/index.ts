@@ -19,3 +19,5 @@ export { encodeQrQuery, decodeQrQuery, buildQrUrl } from "./codec";
 export { classifyContent } from "./content";
 export type { QrContent, QrContentKind } from "./content";
 export { encodeStartParam, decodeStartParam, MAX_START_PARAM_LENGTH } from "./start-param";
+export { LOCALES, DEFAULT_LOCALE, resolveLocale } from "./locale";
+export type { Locale } from "./locale";

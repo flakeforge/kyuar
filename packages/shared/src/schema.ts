@@ -88,7 +88,33 @@ export const qrRequestSchema = z.object({
 export type QrRequest = z.infer<typeof qrRequestSchema>;
 export type QrFormat = z.infer<typeof formatSchema>;
 
-export const shareRequestSchema = qrRequestSchema.omit({ format: true }).extend({
+export const MAX_IMAGE_DATA_URL_LENGTH = 700_000;
+
+export const imageDataUrlSchema = z
+  .string()
+  .max(MAX_IMAGE_DATA_URL_LENGTH, "Image is too large")
+  .regex(
+    /^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/,
+    "Expected a PNG, JPEG or WebP image",
+  );
+
+export const halftoneRequestSchema = z.object({
+  image: imageDataUrlSchema,
+  centerRatio: z.number().min(0.2).max(0.8).default(0.45),
+  contrast: z.number().min(0.5).max(2).default(1),
+});
+
+export const renderRequestSchema = z.object({
+  data: qrRequestSchema.shape.data,
+  style: qrStyleSchema.default(D),
+  logo: imageDataUrlSchema.optional(),
+  halftone: halftoneRequestSchema.optional(),
+});
+
+export type RenderRequest = z.infer<typeof renderRequestSchema>;
+export type HalftoneRequest = z.infer<typeof halftoneRequestSchema>;
+
+export const shareRequestSchema = renderRequestSchema.extend({
   title: z.string().max(64).optional(),
 });
 

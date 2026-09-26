@@ -1,5 +1,6 @@
-import type { Metadata, Viewport } from "next";
+import { Toaster } from "@kyuar/ui/components/toast";
 import "@kyuar/ui/globals.css";
+import type { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {
   title: "kyuar",
@@ -25,7 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <div className="root">{children}</div>
+        <Toaster>{children}</Toaster>
       </body>
     </html>
   );

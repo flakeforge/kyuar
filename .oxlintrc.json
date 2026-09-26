@@ -56,7 +56,8 @@
         "case": "kebabCase"
       }
     ],
-    "react-perf/jsx-no-jsx-as-prop": "off"
+    "react-perf/jsx-no-jsx-as-prop": "off",
+    "react-perf/jsx-no-new-array-as-prop": "off"
   },
   "overrides": [
     {

@@ -1,0 +1,81 @@
+export const en = {
+  input: {
+    label: "Text or link",
+    placeholder: "kyuar.app",
+    kind: {
+      url: "Link",
+      email: "Email",
+      phone: "Phone",
+      wifi: "Wi-Fi",
+      text: "Text",
+    },
+  },
+  preview: {
+    label: "QR code preview",
+    tooLong: "This is too much text for one QR code. Shorten it or lower error correction.",
+    lowContrast: "Colors are too close. Phones may not read this code.",
+  },
+  tabs: {
+    shape: "Shape",
+    color: "Color",
+    layout: "Layout",
+    image: "Image",
+  },
+  shape: {
+    data: "Modules",
+    finderOuter: "Corner frame",
+    finderInner: "Corner dot",
+    alignment: "Small markers",
+    alignmentData: "Like modules",
+    alignmentFinder: "Like corners",
+  },
+  color: {
+    themes: "Themes",
+    background: "Background",
+    data: "Modules",
+    finderOuter: "Corner frame",
+    finderInner: "Corner dot",
+    alignment: "Small markers",
+    timing: "Timing line",
+    solid: "Solid",
+    linear: "Linear",
+    radial: "Radial",
+    angle: "Angle",
+    from: "From",
+    to: "To",
+  },
+  layout: {
+    margin: "Margin",
+    marginHint: "4 modules is the standard quiet zone.",
+    corners: "Corner rounding",
+    ecc: "Error correction",
+    eccHint: "Higher levels survive damage and logos but make the code denser.",
+    boost: "Raise error correction when there is room",
+  },
+  image: {
+    logo: "Logo",
+    logoHint: "Placed in the center. Error correction switches to H.",
+    logoSize: "Logo size",
+    halftone: "Halftone picture",
+    halftoneHint: "The picture is drawn with the code itself.",
+    centerSize: "Dot size",
+    contrast: "Contrast",
+    choose: "Choose image",
+    replace: "Replace",
+    remove: "Remove",
+    unreadable: "This file could not be read as an image.",
+  },
+  actions: {
+    download: "Download",
+    share: "Share",
+    surprise: "Surprise me",
+    sharing: "Preparing…",
+    downloadFailed: "Download failed. Try again.",
+    shareFailed: "Could not share. Try again.",
+    shareUnavailable: "Open kyuar in Telegram to share.",
+  },
+} as const;
+
+type Widen<T> = { -readonly [K in keyof T]: T[K] extends string ? string : Widen<T[K]> };
+
+export type Messages = Widen<typeof en>;

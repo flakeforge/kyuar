@@ -1,44 +1,53 @@
-import { getBot, imageUrl, startAppUrl } from "@kyuar/bot";
-import env from "@kyuar/env";
-import { qrRequestSchema, shareRequestSchema } from "@kyuar/shared";
-import { InitDataError, verifyInitData } from "@kyuar/shared/server";
+import { APP_URL, getBot, imageUrl, startAppUrl } from "@kyuar/bot";
+import { qrRequestSchema, shareRequestSchema, type ShareRequest } from "@kyuar/shared";
 import { NextResponse } from "next/server";
+
+import { authenticate } from "~/lib/auth";
+import { rateLimit } from "~/lib/rate-limit";
+import { renderImages, storeRender } from "~/lib/render-store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+async function photoUrl(request: ShareRequest): Promise<string | undefined> {
+  if (!request.logo && !request.halftone) {
+    return imageUrl(
+      qrRequestSchema.parse({ data: request.data, style: request.style, format: "jpg" }),
+    );
+  }
+
+  const id = await storeRender(await renderImages(request));
+  return id ? `${APP_URL}/api/render/${id}` : undefined;
+}
+
 /**
- * Prepares an inline message so the mini app can call
- * `WebApp.shareMessage(id)`. Telegram requires the bot, not the client, to
- * create the message, which is why this round trip exists.
+ * Prepares an inline message so the Mini App can call `shareMessage(id)`.
+ * Telegram requires the bot, not the client, to create the message, which is
+ * why this round trip exists.
  */
 export async function POST(request: Request) {
-  const initData = request.headers.get("x-telegram-init-data");
-  if (!initData) {
-    return NextResponse.json({ error: "Missing init data" }, { status: 401 });
+  const auth = authenticate(request);
+  if (auth instanceof NextResponse) return auth;
+
+  const limit = await rateLimit("share", request);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfter) } },
+    );
   }
 
-  let userId: number;
-  try {
-    userId = verifyInitData(initData, env.BOT_TOKEN).user.id;
-  } catch (error: unknown) {
-    const message = error instanceof InitDataError ? error.message : "Invalid init data";
-    return NextResponse.json({ error: message }, { status: 401 });
-  }
+  const parsed = shareRequestSchema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) return NextResponse.json({ error: "Invalid QR options" }, { status: 400 });
 
-  const body = await request.json().catch(() => null);
-  const parsed = shareRequestSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid QR options" }, { status: 400 });
-  }
-
-  const { title, ...options } = parsed.data;
-  const qrRequest = qrRequestSchema.parse({ ...options, format: "jpg" });
-  const url = imageUrl(qrRequest);
+  const { title, data } = parsed.data;
 
   try {
+    const url = await photoUrl(parsed.data);
+    if (!url) return NextResponse.json({ error: "Storage is not configured" }, { status: 503 });
+
     const prepared = await getBot().api.savePreparedInlineMessage(
-      userId,
+      auth.user.id,
       {
         type: "photo",
         id: `share-${Date.now().toString(36)}`,
@@ -47,7 +56,7 @@ export async function POST(request: Request) {
         photo_width: 1024,
         photo_height: 1024,
         title: title ?? "QR code",
-        caption: options.data.slice(0, 900),
+        caption: data.slice(0, 900),
         reply_markup: {
           inline_keyboard: [[{ text: "Make your own", url: startAppUrl() }]],
         },

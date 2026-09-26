@@ -1,6 +1,6 @@
 import { decodeStartParam } from "@kyuar/shared";
 
-import { Editor } from "~/components/editor";
+import { Editor } from "~/components/editor/editor";
 
 interface PageProps {
   searchParams: Promise<{ data?: string | string[]; tgWebAppStartParam?: string | string[] }>;

@@ -14,6 +14,7 @@ import {
 const MOBILE_PLATFORMS: ReadonlySet<string> = new Set(["ios", "android", "android_x"]);
 
 let started = false;
+let headerColor: string | undefined;
 const listeners = new Set<VoidFunction>();
 
 export function subscribeTelegram(listener: VoidFunction): VoidFunction {
@@ -59,14 +60,19 @@ export function startTelegram(): boolean {
   swipeBehavior.mount.ifAvailable();
   swipeBehavior.disableVertical.ifAvailable();
 
+  applyHeaderColor();
   if (isMobile()) void enterFullscreen();
   for (const listener of listeners) listener();
   return true;
 }
 
+function applyHeaderColor() {
+  if (started && headerColor) miniApp.setHeaderColor.ifAvailable(headerColor as `#${string}`);
+}
+
 export function setHeaderColor(color: string) {
-  if (!started) return;
-  miniApp.setHeaderColor.ifAvailable(color as `#${string}`);
+  headerColor = color;
+  applyHeaderColor();
 }
 
 export function rawInitData(): string | undefined {

@@ -77,6 +77,10 @@
     height: 100%;
   }
 
+  html {
+    scroll-padding-bottom: 7rem;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
     overscroll-behavior-y: none;

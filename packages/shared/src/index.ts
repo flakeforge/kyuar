@@ -8,9 +8,13 @@ export {
   dotShapeSchema,
   finderOuterShapeSchema,
   finderInnerShapeSchema,
+  renderRequestSchema,
+  halftoneRequestSchema,
+  imageDataUrlSchema,
   MAX_QR_DATA_LENGTH,
+  MAX_IMAGE_DATA_URL_LENGTH,
 } from "./schema";
-export type { QrFormat, QrRequest, ShareRequest } from "./schema";
+export type { HalftoneRequest, QrFormat, QrRequest, RenderRequest, ShareRequest } from "./schema";
 export { encodeQrQuery, decodeQrQuery, buildQrUrl } from "./codec";
 export { classifyContent } from "./content";
 export type { QrContent, QrContentKind } from "./content";

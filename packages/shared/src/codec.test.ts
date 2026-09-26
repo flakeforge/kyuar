@@ -1,33 +1,56 @@
+import { DEFAULT_STYLE, withColors } from "@kyuar/qr";
 import { describe, expect, it } from "vitest";
 
 import { decodeQrQuery, encodeQrQuery } from "./codec";
 import { qrRequestSchema } from "./schema";
 
+function roundTrip(input: unknown) {
+  const request = qrRequestSchema.parse(input);
+  return { request, decoded: decodeQrQuery(new URLSearchParams(encodeQrQuery(request))) };
+}
+
 describe("QR query codec", () => {
   it("keeps a leading # in the data", () => {
-    const request = qrRequestSchema.parse({ data: "#hashtag" });
-    const decoded = decodeQrQuery(new URLSearchParams(encodeQrQuery(request)));
-
-    expect(decoded.data).toBe("#hashtag");
+    expect(roundTrip({ data: "#hashtag" }).decoded.data).toBe("#hashtag");
   });
 
-  it("drops the # from colors and restores it on decode", () => {
-    const request = qrRequestSchema.parse({ data: "x", foreground: "#112233" });
-    const query = new URLSearchParams(encodeQrQuery(request));
+  it("omits the style when it matches the defaults", () => {
+    const request = qrRequestSchema.parse({ data: "x" });
 
-    expect(query.get("fg")).toBe("112233");
-    expect(decodeQrQuery(query).foreground).toBe("#112233");
+    expect(new URLSearchParams(encodeQrQuery(request)).has("s")).toBe(false);
+    expect(request.style).toEqual(DEFAULT_STYLE);
   });
 
-  it("round-trips every field", () => {
-    const request = qrRequestSchema.parse({
-      data: "https://example.com/?a=1&b=два",
-      ecc: "H",
+  it("round-trips a fully custom style", () => {
+    const style = {
+      ...withColors(DEFAULT_STYLE, "#112233", "#fafafa"),
+      ecc: "H" as const,
       margin: 6,
-      logoRatio: 0.2,
+      data: {
+        shape: "classy" as const,
+        paint: {
+          type: "linear" as const,
+          angle: 45,
+          stops: [
+            { offset: 0, color: "#ff0000" },
+            { offset: 1, color: "#0000ff" },
+          ],
+        },
+      },
+      logo: { ratio: 0.2 },
+    };
+    const { request, decoded } = roundTrip({
+      data: "https://example.com/?a=1&b=два",
       format: "svg",
+      style,
     });
 
-    expect(decodeQrQuery(new URLSearchParams(encodeQrQuery(request)))).toEqual(request);
+    expect(decoded).toEqual(request);
+  });
+
+  it("rejects an unknown shape", () => {
+    const params = new URLSearchParams({ d: "x", s: btoa('{"data":{"shape":"nope"}}') });
+
+    expect(() => decodeQrQuery(params)).toThrow();
   });
 });

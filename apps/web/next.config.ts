@@ -3,7 +3,13 @@ import type { NextConfig } from "next";
 const config: NextConfig = {
   output: "standalone",
 
-  transpilePackages: ["@kyuar/qr", "@kyuar/shared", "@kyuar/env", "@kyuar/bot"],
+  transpilePackages: [
+    "@kyuar/qr",
+    "@kyuar/qr-encoder",
+    "@kyuar/shared",
+    "@kyuar/env",
+    "@kyuar/bot",
+  ],
 
   serverExternalPackages: ["@resvg/resvg-js", "grammy"],
 

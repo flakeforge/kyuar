@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Invalid QR options" }, { status: 400 });
   }
 
-  const { svg } = renderQr(options);
+  const { svg } = renderQr({ data: options.data, style: options.style });
 
   if (options.format === "svg") {
     return new NextResponse(svg, {
@@ -31,7 +31,7 @@ export async function GET(request: Request) {
 
   const png = new Resvg(svg, {
     fitTo: { mode: "width", value: PNG_WIDTH },
-    background: options.background,
+    font: { loadSystemFonts: false },
   })
     .render()
     .asPng();

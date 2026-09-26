@@ -1,6 +1,6 @@
-export const MAX_START_PARAM_LENGTH = 512;
+import { fromBase64Url, toBase64Url } from "./base64url";
 
-const START_PARAM = /^[A-Za-z0-9_-]+$/;
+export const MAX_START_PARAM_LENGTH = 512;
 
 /**
  * Encodes text as a Telegram `startapp` parameter: base64url over UTF-8.
@@ -9,24 +9,11 @@ const START_PARAM = /^[A-Za-z0-9_-]+$/;
  */
 export function encodeStartParam(text: string): string | undefined {
   if (!text) return undefined;
-
-  let binary = "";
-  for (const byte of new TextEncoder().encode(text)) binary += String.fromCodePoint(byte);
-
-  const encoded = btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
+  const encoded = toBase64Url(text);
   return encoded.length <= MAX_START_PARAM_LENGTH ? encoded : undefined;
 }
 
 export function decodeStartParam(param: string | null | undefined): string | undefined {
-  if (!param || param.length > MAX_START_PARAM_LENGTH || !START_PARAM.test(param)) {
-    return undefined;
-  }
-
-  try {
-    const binary = atob(param.replaceAll("-", "+").replaceAll("_", "/"));
-    const bytes = Uint8Array.from(binary, (char) => char.codePointAt(0) ?? 0);
-    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-  } catch {
-    return undefined;
-  }
+  if (!param || param.length > MAX_START_PARAM_LENGTH) return undefined;
+  return fromBase64Url(param);
 }

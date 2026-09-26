@@ -12,7 +12,7 @@ function linearize(component: number) {
   return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
 }
 
-export function relativeLuminance(hex: string): number {
+function relativeLuminance(hex: string): number {
   const [r, g, b] = channels(hex);
   return 0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b);
 }
@@ -33,7 +33,3 @@ export function contrastRatio(a: string, b: string): number {
 }
 
 export const MIN_SCAN_CONTRAST = 4.5;
-
-export function isScannable(foreground: string, background: string): boolean {
-  return contrastRatio(foreground, background) >= MIN_SCAN_CONTRAST;
-}

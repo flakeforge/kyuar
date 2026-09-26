@@ -24,8 +24,19 @@
     "node": true
   },
   "rules": {
-    "eslint/eqeqeq": ["error", "always", { "null": "ignore" }],
-    "eslint/no-console": ["warn", { "allow": ["warn", "error", "info"] }],
+    "eslint/eqeqeq": [
+      "error",
+      "always",
+      {
+        "null": "ignore"
+      }
+    ],
+    "eslint/no-console": [
+      "warn",
+      {
+        "allow": ["warn", "error", "info"]
+      }
+    ],
     "eslint/no-var": "error",
     "eslint/prefer-const": "error",
     "react/react-in-jsx-scope": "off",
@@ -39,7 +50,12 @@
     "unicorn/prefer-node-protocol": "error",
     "unicorn/no-array-reduce": "off",
     "unicorn/no-null": "off",
-    "unicorn/filename-case": ["error", { "case": "kebabCase" }]
+    "unicorn/filename-case": [
+      "error",
+      {
+        "case": "kebabCase"
+      }
+    ]
   },
   "overrides": [
     {
@@ -61,6 +77,7 @@
     "**/dist/**",
     "**/*.d.ts",
     ".claude/**",
-    "pnpm-lock.yaml"
+    "pnpm-lock.yaml",
+    "packages/qr-encoder/src/encoder.ts"
   ]
 }

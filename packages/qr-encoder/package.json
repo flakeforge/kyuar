@@ -1,0 +1,21 @@
+{
+  "name": "@kyuar/qr-encoder",
+  "version": "0.1.0",
+  "private": true,
+  "description": "QR encoder vendored from paulmillr/qr, extended with module kinds",
+  "license": "(MIT OR Apache-2.0)",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/encoder.ts"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "qr": "0.7.0",
+    "typescript": "^5.9.3"
+  }
+}

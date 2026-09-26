@@ -29,9 +29,14 @@ to one made in the editor.
 
 ## Why it looks different
 
-Most generators give you black squares on white. kyuar draws the finder
-patterns as rings and fuses adjacent data modules into one continuous shape,
-the way the logo does.
+Most generators give you black squares on white. kyuar styles every part of the
+symbol on its own: data modules (29 shapes), finder rings and eyes, alignment
+and timing patterns, background, margin and logo area. Each layer takes a solid
+color or a linear or radial gradient. Halftone mode turns a picture into the
+code itself.
+
+Every shape is checked by a decoder in the test suite. A style that does not
+scan does not ship.
 
 Every theme is contrast-checked before it ships. A palette below 4.5:1 does not
 scan reliably on a real camera, so it does not make it into the app.
@@ -98,7 +103,8 @@ just build     # production build
 ```
 apps/web          Next.js 16 app: Mini App UI, /api/qr, /api/bot, /api/share
 apps/bot          grammy handlers and the development long-polling runner
-packages/qr       QR matrix renderer, framework agnostic, SVG out
+packages/qr       styled SVG renderer: shapes, paints, halftone, logo area
+packages/qr-encoder  QR encoder with per-module kinds, vendored from paulmillr/qr
 packages/shared   zod schemas, option codec, Telegram initData verification
 packages/env      envin schema, the single source of truth for configuration
 brand/            logo, icons and Lottie animation
@@ -127,9 +133,22 @@ Put a reverse proxy cache in front of `/api/qr`. The route already sends
 - Custom logo upload
 - QR scanner using `showScanQrPopup`
 
+## Credits
+
+- [paulmillr/qr](https://github.com/paulmillr/qr) by Paul Miller: the QR
+  encoder in `packages/qr-encoder`, and the decoder the tests use.
+- [liquid-js/qr-code-styling](https://github.com/liquid-js/qr-code-styling) by
+  Denys Kozak and Liquid-JS: the dot, finder ring and finder eye shapes in
+  `packages/qr/src/figures`.
+- Hung-Kuo Chu, Chia-Sheng Chang, Ruen-Rone Lee and Niloy J. Mitra, "Halftone
+  QR Codes" (SIGGRAPH Asia 2013): the method behind halftone mode.
+
+Full license texts are in [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md).
+
 ## License
 
-AGPL-3.0-only. See [LICENSE](./LICENSE).
+AGPL-3.0-only. See [LICENSE](./LICENSE). Third-party code keeps its own license,
+see [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md).
 
 <p align="center">
   <img src="./.github/assets/footer.svg" alt="FlakeForge" width="100%">

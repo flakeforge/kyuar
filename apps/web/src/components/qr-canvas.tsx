@@ -1,29 +1,27 @@
 "use client";
 
-import { renderQr, type QrOptions } from "@kyuar/qr";
+import { renderQr, type QrStyle } from "@kyuar/qr";
 import { useMemo } from "react";
 
 interface QrCanvasProps {
-  options: Omit<QrOptions, "moduleSize" | "cornerRadius"> & Partial<QrOptions>;
+  data: string;
+  style: QrStyle;
 }
 
-export function QrCanvas({ options }: QrCanvasProps) {
+export function QrCanvas({ data, style }: QrCanvasProps) {
   const svg = useMemo(() => {
     try {
-      return renderQr({ ...options, moduleSize: 16 }).svg;
+      return renderQr({ data, style, idPrefix: "preview" }).svg;
     } catch {
       return null;
     }
-  }, [options]);
+  }, [data, style]);
 
   return (
-    <div
-      className="aspect-square w-full overflow-hidden rounded-(--radius-card) transition-colors duration-300"
-      style={{ background: options.background }}
-    >
+    <div className="aspect-square w-full overflow-hidden rounded-(--radius-card) transition-colors duration-300">
       {svg ? (
         <div
-          className="h-full w-full p-[6%] [&>svg]:h-full [&>svg]:w-full"
+          className="h-full w-full [&>svg]:h-full [&>svg]:w-full"
           dangerouslySetInnerHTML={{ __html: svg }}
         />
       ) : (

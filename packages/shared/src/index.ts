@@ -1,13 +1,16 @@
 export {
   qrRequestSchema,
+  qrStyleSchema,
   shareRequestSchema,
+  paintSchema,
   eccSchema,
-  moduleStyleSchema,
-  finderStyleSchema,
-  HEX_COLOR,
+  formatSchema,
+  dotShapeSchema,
+  finderOuterShapeSchema,
+  finderInnerShapeSchema,
   MAX_QR_DATA_LENGTH,
 } from "./schema";
-export type { QrRequest, ShareRequest } from "./schema";
+export type { QrFormat, QrRequest, ShareRequest } from "./schema";
 export { encodeQrQuery, decodeQrQuery, buildQrUrl } from "./codec";
 export { classifyContent } from "./content";
 export type { QrContent, QrContentKind } from "./content";

@@ -1,6 +1,6 @@
 "use client";
 
-import { DEFAULT_THEME, THEMES, type QrTheme } from "@kyuar/qr";
+import { DEFAULT_STYLE, DEFAULT_THEME, THEMES, withColors, type QrTheme } from "@kyuar/qr";
 import { buildQrUrl, classifyContent, qrRequestSchema } from "@kyuar/shared";
 import { useCallback, useMemo, useState } from "react";
 
@@ -10,8 +10,8 @@ import { ThemePicker } from "~/components/theme-picker";
 import { getWebApp, haptic } from "~/lib/telegram";
 import { useTelegram } from "~/lib/use-telegram";
 
-const FINDER_CYCLE = ["ring", "circle", "rounded", "square"] as const;
-const MODULE_CYCLE = ["fluid", "dot", "rounded", "square"] as const;
+const FINDER_CYCLE = ["dot", "extra-rounded", "classy", "square"] as const;
+const MODULE_CYCLE = ["fluid", "dot", "classy-rounded", "square"] as const;
 
 interface EditorProps {
   initialData: string;
@@ -26,22 +26,19 @@ export function Editor({ initialData }: EditorProps) {
   const [isSharing, setIsSharing] = useState(false);
 
   const content = classifyContent(value || "kyuar.app");
-  const finderStyle = FINDER_CYCLE[styleIndex % FINDER_CYCLE.length] ?? "ring";
+  const finderStyle = FINDER_CYCLE[styleIndex % FINDER_CYCLE.length] ?? "dot";
   const moduleStyle = MODULE_CYCLE[styleIndex % MODULE_CYCLE.length] ?? "fluid";
 
-  const options = useMemo(
-    () => ({
-      data: content.value,
-      ecc: "M" as const,
-      moduleStyle,
-      finderStyle,
-      foreground: theme.foreground,
-      background: theme.background,
-      margin: 3,
-      logoRatio: 0,
-    }),
-    [content.value, moduleStyle, finderStyle, theme.foreground, theme.background],
-  );
+  const style = useMemo(() => {
+    const colored = withColors(DEFAULT_STYLE, theme.foreground, theme.background);
+    return {
+      ...colored,
+      data: { ...colored.data, shape: moduleStyle },
+      finderOuter: { ...colored.finderOuter, shape: finderStyle },
+    };
+  }, [moduleStyle, finderStyle, theme.foreground, theme.background]);
+
+  const options = useMemo(() => ({ data: content.value, style }), [content.value, style]);
 
   const applyTheme = useCallback(
     (next: QrTheme) => {
@@ -118,7 +115,7 @@ export function Editor({ initialData }: EditorProps) {
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-4 px-4 pt-4 pb-32">
-      <QrCanvas options={options} />
+      <QrCanvas data={options.data} style={style} />
 
       <div className="surface-row flex items-center gap-3 px-5 py-4">
         <input

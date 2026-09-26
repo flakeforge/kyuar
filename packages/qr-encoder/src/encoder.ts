@@ -1,0 +1,900 @@
+/*!
+ * Copyright (c) 2023 Paul Miller (paulmillr.com)
+ * SPDX-License-Identifier: MIT OR Apache-2.0
+ *
+ * Vendored from https://github.com/paulmillr/qr (src/index.ts at
+ * e90a06b49e0838fe1921824d0089db7db3a11037) and trimmed to the encoder.
+ * kyuar changes: every template module records its kind (finder ring, gap,
+ * eye, separator, alignment, timing, format, version, dark module), the
+ * chosen mask is returned, output renderers are removed, and `encodeSymbol`
+ * adds ECC boosting. See THIRD_PARTY_NOTICES.md.
+ */
+/**
+ * QR code generator (encoder). Self-contained (no imports); the decoder and
+ * its shared machinery (Bitmap, tables, GF/RS) live in `decode.ts`.
+ *
+ * What was deliberately dropped vs the full encoder: the tri-state Bitmap
+ * drawing DSL, the shared decoder utilities, and verbose validation messages.
+ * What was deliberately kept: word-parallel mask penalty scoring over packed
+ * bit rows — it is the one optimization whose absence would make
+ * large-payload encodes ~5-10x slower while costing only a few hundred
+ * bytes — plus a single-slot per-version cache of the symbol template,
+ * zigzag order and mask planes (see SymCache).
+ * @module
+ */
+
+/** Error correction mode. low: 7%, medium: 15%, quartile: 25%, high: 30%. */
+export type ErrorCorrection = 'low' | 'medium' | 'quartile' | 'high';
+/** Module kinds recorded while drawing the function-pattern template. */
+export const KIND = {
+  Data: 0,
+  FinderRing: 1,
+  FinderGap: 2,
+  FinderEye: 3,
+  Separator: 4,
+  AlignmentRing: 5,
+  AlignmentGap: 6,
+  AlignmentEye: 7,
+  Timing: 8,
+  Format: 9,
+  Version: 10,
+  DarkModule: 11,
+} as const;
+/** QR payload encoding name. */
+export type EncodingType = 'numeric' | 'alphanumeric' | 'byte';
+/** QR version: 1..40, determines symbol size. */
+export type Version = number;
+/** QR mask pattern index. */
+export type Mask = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
+/**
+ * ISO/IEC 18004:2024 Table 1: total codewords by version (shared with the
+ * decoder). Computed as data modules / 8: symbol area minus function
+ * patterns (finders+separators+format 191+timing, alignment grid overlaps
+ * removed) minus version info for ver >= 7.
+ */
+const BYTES: number[] = /* @__PURE__ */ (() => {
+  const res: number[] = [];
+  for (let ver = 1; ver <= 40; ver++) {
+    let bits = (16 * ver + 128) * ver + 64;
+    if (ver >= 2) {
+      const align = Math.floor(ver / 7) + 2;
+      bits -= (25 * align - 10) * align - 55;
+      if (ver >= 7) bits -= 36;
+    }
+    res.push(bits >>> 3);
+  }
+  return res;
+})();
+/** All error-correction levels, in spec table order (also the packed-table segment order). */
+const ECC_LEVELS: ErrorCorrection[] = ['low', 'medium', 'quartile', 'high'];
+/** ISO/IEC 18004:2024 Table 9: ECC codewords per block, by level (shared with the decoder). */
+// prettier-ignore
+const WORDS_PER_BLOCK: Record<ErrorCorrection, number[]> = {
+  low: [
+    7, 10, 15, 20, 26, 18, 20, 24, 30, 18, 20, 24, 26, 30, 22, 24, 28, 30, 28, 28,
+    28, 28, 30, 30, 26, 28, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+  ],
+  medium: [
+    10, 16, 26, 18, 24, 16, 18, 22, 22, 26, 30, 22, 22, 24, 24, 28, 28, 26, 26, 26,
+    26, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+  ],
+  quartile: [
+    13, 22, 18, 26, 18, 24, 18, 22, 20, 24, 28, 26, 24, 20, 30, 24, 28, 28, 26, 30,
+    28, 30, 30, 30, 30, 28, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+  ],
+  high: [
+    17, 28, 22, 16, 22, 28, 26, 26, 24, 28, 24, 28, 22, 24, 24, 30, 28, 28, 26, 28,
+    30, 24, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+  ],
+};
+/** ISO/IEC 18004:2024 Table 9: error-correction block count by version and level. */
+// prettier-ignore
+const ECC_BLOCKS: Record<ErrorCorrection, number[]> = {
+  low:      [1, 1, 1, 1, 1, 2, 2, 2, 2, 4, 4, 4, 4, 4, 6, 6, 6, 6, 7, 8, 8, 9, 9, 10, 12, 12, 12, 13, 14, 15, 16, 17, 18, 19, 19, 20, 21, 22, 24, 25],
+  medium:   [1, 1, 1, 2, 2, 4, 4, 4, 5, 5, 5, 8, 9, 9, 10, 10, 11, 13, 14, 16, 17, 17, 18, 20, 21, 23, 25, 26, 28, 29, 31, 33, 35, 37, 38, 40, 43, 45, 47, 49],
+  quartile: [1, 1, 2, 2, 4, 4, 6, 6, 8, 8, 8, 10, 12, 16, 12, 17, 16, 18, 21, 20, 23, 23, 25, 27, 29, 34, 34, 35, 38, 40, 43, 45, 48, 51, 53, 56, 59, 62, 65, 68],
+  high:     [1, 1, 2, 4, 4, 4, 5, 6, 8, 8, 11, 11, 16, 16, 18, 16, 19, 21, 25, 25, 25, 34, 30, 32, 35, 37, 40, 42, 45, 48, 51, 54, 57, 60, 63, 66, 70, 74, 77, 81],
+};
+
+/** ISO/IEC 18004:2024 §7.9.1 Table 12: error-correction-level format indicators. */
+const EC_CODE: Record<ErrorCorrection, number> = { low: 1, medium: 0, quartile: 3, high: 2 };
+
+/** ISO/IEC 18004:2024 Table 5: alphanumeric characters in value order. */
+const ALPHANUMERIC = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
+
+/**
+ * Alignment pattern center coordinates for a version (ISO/IEC 18004:2024
+ * Annex E). Exported for custom-design renderers (qrbtf-style module
+ * classification): every alignment pattern is centered on (cx, cy) for each
+ * pair from this list, except where it would overlap a finder pattern.
+ * Coordinates are borderless-symbol module indices.
+ */
+function alignmentPatterns(ver: number): number[] {
+  ver = asVersion(ver);
+  if (ver === 1) return [];
+  const last = 21 + 4 * (ver - 1) - 7;
+  const count = Math.ceil((last - 6) / 28);
+  let interval = Math.floor((last - 6) / count);
+  if (interval % 2) interval += 1;
+  else if (((last - 6) % count) * 2 >= count) interval += 2;
+  const res = [6];
+  for (let m = 1; m < count; m++) res.push(last - (count - m) * interval);
+  res.push(last);
+  return res;
+}
+
+/** BCH-protected masked format word from ISO/IEC 18004:2024 §7.9.1 and Annex C.2. */
+function formatBits(ecc: ErrorCorrection, mask: number): number {
+  const data = (EC_CODE[ecc] << 3) | mask;
+  let d = data;
+  for (let i = 0; i < 10; i++) d = (d << 1) ^ ((d >> 9) * 0b10100110111);
+  return ((data << 10) | d) ^ 0b101010000010010;
+}
+/** Golay-protected 18-bit version word (ISO/IEC 18004:2024 §7.10 / Annex D.2). */
+function versionBits(ver: number): number {
+  let d = ver;
+  for (let i = 0; i < 12; i++) d = (d << 1) ^ ((d >> 11) * 0b1111100100101);
+  return (ver << 12) | d;
+}
+
+const MODE_BITS: Record<EncodingType, number> = { numeric: 1, alphanumeric: 2, byte: 4 };
+const LENGTH_BITS: Record<EncodingType, number[]> = {
+  numeric: [10, 12, 14],
+  alphanumeric: [9, 11, 13],
+  byte: [8, 16, 16],
+};
+
+/**
+ * GF(2^8) exp/log tables with the QR primitive polynomial 0x11d. EXP is
+ * doubled so products of two logs index it without a mod. Shared with the
+ * decoder (it corrects with the same field the encoder generates parity in);
+ * the PURE-annotated initializer lets bundlers drop it for consumers that
+ * only import the spec tables above.
+ */
+const GF256: { exp: Uint8Array; log: Uint8Array } = /* @__PURE__ */ (() => {
+  const exp = new Uint8Array(510);
+  const log = new Uint8Array(256);
+  for (let i = 0, x = 1; i < 255; i++) {
+    exp[i] = exp[i + 255] = x;
+    log[x] = i;
+    x <<= 1;
+    if (x & 0x100) x ^= 0x11d;
+  }
+  return { exp, log };
+})();
+
+// Reed-Solomon generator polynomial (leading 1 dropped); one per symbol.
+function rsGenerator(eccWords: number): Uint8Array {
+  const { exp: EXP, log: LOG } = GF256;
+  const gen = new Uint8Array(eccWords); // coefficients after the leading x^n
+  gen[eccWords - 1] = 1;
+  for (let i = 0, root = 1; i < eccWords; i++) {
+    for (let j = 0; j < eccWords; j++) {
+      const c = gen[j];
+      gen[j] = (c ? EXP[LOG[c] + LOG[root]] : 0) ^ (j + 1 < eccWords ? gen[j + 1] : 0);
+    }
+    root = EXP[LOG[root] + 1]; // next power of alpha
+  }
+  return gen;
+}
+
+type RsCache = { gen: Uint8Array; mul: Uint8Array; mul32: Int32Array };
+const RS_CACHE: (RsCache | undefined)[] = [];
+
+// Generator and all coefficient*feedback products, shared by every symbol
+// with the same parity length; entries are generated lazily. `mul32` holds
+// the same products four to a word (coefficient j in byte j & 3 of word
+// j >> 2) for the word-wise remainder loop.
+function rsCached(eccWords: number): RsCache {
+  let cached = RS_CACHE[eccWords];
+  if (cached !== undefined) return cached;
+  const gen = rsGenerator(eccWords);
+  const { exp: EXP, log: LOG } = GF256;
+  const mul = new Uint8Array(256 * eccWords);
+  const stride = (eccWords + 3) >>> 2;
+  const mul32 = new Int32Array(256 * stride);
+  for (let f = 1; f < 256; f++) {
+    const lf = LOG[f];
+    const off = f * eccWords;
+    for (let j = 0; j < eccWords; j++) {
+      const c = gen[j];
+      if (c) mul32[f * stride + (j >>> 2)] |= (mul[off + j] = EXP[LOG[c] + lf]) << (8 * (j & 3));
+    }
+  }
+  return (RS_CACHE[eccWords] = { gen, mul, mul32 });
+}
+
+const RS_TMP = /* @__PURE__ */ new Int32Array(8);
+// Reed-Solomon parity via LFSR remainder, four coefficients a word: each
+// data byte shifts the remainder down one byte across the words and XORs
+// in the packed products row of the feedback byte.
+function rsEcc(data: Uint8Array, gen: Uint8Array, mul32: Int32Array): Uint8Array {
+  const eccWords = gen.length;
+  const stride = mul32.length >>> 8;
+  const last = stride - 1;
+  const w = RS_TMP.fill(0, 0, stride);
+  for (let i = 0; i < data.length; i++) {
+    let cur = w[0];
+    const off = (data[i] ^ (cur & 0xff)) * stride;
+    for (let k = 0; k < last; k++) {
+      const next = w[k + 1];
+      w[k] = ((cur >>> 8) | (next << 24)) ^ mul32[off + k];
+      cur = next;
+    }
+    w[last] = (cur >>> 8) ^ mul32[off + last];
+  }
+  const res = new Uint8Array(eccWords);
+  for (let j = 0; j < eccWords; j++) res[j] = w[j >>> 2] >>> (8 * (j & 3));
+  return res;
+}
+
+function capacity(ver: number, ecc: ErrorCorrection) {
+  const bytes = BYTES[ver - 1];
+  const words = WORDS_PER_BLOCK[ecc][ver - 1];
+  const numBlocks = ECC_BLOCKS[ecc][ver - 1];
+  const blockLen = Math.floor(bytes / numBlocks) - words;
+  const shortBlocks = numBlocks - (bytes % numBlocks);
+  return { words, numBlocks, shortBlocks, blockLen, capacity: (bytes - words * numBlocks) * 8 };
+}
+
+const err = (msg: string): never => {
+  throw new Error(msg);
+};
+
+function asVersion(ver: unknown): number {
+  if (typeof ver !== 'number') throw new TypeError(`"ver" expected number, got type=${typeof ver}`);
+  if (!Number.isSafeInteger(ver)) throw new RangeError(`"ver" expected safe integer, got ${ver}`);
+  if (ver < 1 || ver > 40) throw new RangeError(`Invalid version=${ver}. Expected number [1..40]`);
+  return ver;
+}
+
+function detectType(str: string): EncodingType {
+  let type: EncodingType = 'numeric';
+  for (let i = 0; i < str.length; i++) {
+    const v = ALNUM_VAL[str.charCodeAt(i)]; // undefined past 127 -> byte
+    if (!(v >= 0)) return 'byte';
+    if (v > 9) type = 'alphanumeric';
+  }
+  return type;
+}
+
+// charCode -> alphanumeric value; -1 outside the Table 5 alphabet. Replaces
+// a 45-char indexOf scan per character in the encode hot path.
+const ALNUM_VAL: Int8Array = /* @__PURE__ */ (() => {
+  const t = new Int8Array(128).fill(-1);
+  for (let i = 0; i < ALPHANUMERIC.length; i++) t[ALPHANUMERIC.charCodeAt(i)] = i;
+  return t;
+})();
+
+// Segment bits + terminator + padding + RS interleaving.
+function encodeData(
+  ver: number,
+  ecc: ErrorCorrection,
+  text: string,
+  type: EncodingType,
+  utf8: Uint8Array | undefined
+): Uint8Array {
+  const cap = capacity(ver, ecc);
+  const lengthBits = LENGTH_BITS[type][Math.floor((ver + 7) / 17)];
+  const dataLen = type === 'byte' ? utf8!.length : text.length;
+  if (dataLen >= 1 << lengthBits) err('Capacity overflow');
+  const bytes = new Uint8Array(cap.capacity >>> 3);
+  // MSB-first bit accumulator, flushed a byte at a time. Pushes are <= 16
+  // bits and flushing keeps acc below 8 bits, so it never nears 32. Writes
+  // past the end fall off the Uint8Array exactly like the old per-bit
+  // writer's did; the overflow check below still sees the true bit count.
+  let acc = 0;
+  let accBits = 0;
+  let bytePos = 0;
+  const push = (value: number, len: number) => {
+    acc = (acc << len) | value;
+    for (accBits += len; accBits >= 8;) bytes[bytePos++] = (acc >>> (accBits -= 8)) & 0xff;
+  };
+  push(MODE_BITS[type], 4);
+  push(dataLen, lengthBits);
+  if (type === 'numeric') {
+    for (let i = 0; i < dataLen; i += 3) {
+      const n = Math.min(3, dataLen - i);
+      push(Number(text.slice(i, i + n)), [0, 4, 7, 10][n]);
+    }
+  } else if (type === 'alphanumeric') {
+    for (let i = 0; i + 1 < dataLen; i += 2)
+      push(ALNUM_VAL[text.charCodeAt(i)] * 45 + ALNUM_VAL[text.charCodeAt(i + 1)], 11);
+    if (dataLen & 1) push(ALNUM_VAL[text.charCodeAt(dataLen - 1)], 6);
+  } else {
+    for (let i = 0; i < utf8!.length; i++) push(utf8![i], 8);
+  }
+  let bitPos = bytePos * 8 + accBits;
+  if (bitPos > cap.capacity) err('Capacity overflow');
+  if (accBits) bytes[bytePos] = (acc << (8 - accBits)) & 0xff;
+  // Terminator/alignment zeros come from the flush; then pad codewords.
+  bitPos += Math.min(4, cap.capacity - bitPos);
+  if (bitPos & 7) bitPos += 8 - (bitPos & 7);
+  for (let i = bitPos >>> 3, pad = 0; i < bytes.length; i++, pad ^= 1) bytes[i] = pad ? 0x11 : 0xec;
+  // Split into RS blocks (short first), compute parity, interleave both.
+  const { words, numBlocks, shortBlocks, blockLen } = cap;
+  const rs = rsCached(words);
+  const blocks: Uint8Array[] = [];
+  const eccs: Uint8Array[] = [];
+  for (let i = 0, pos = 0; i < numBlocks; i++) {
+    const len = blockLen + (i < shortBlocks ? 0 : 1);
+    blocks.push(bytes.subarray(pos, pos + len));
+    eccs.push(rsEcc(blocks[i], rs.gen, rs.mul32));
+    pos += len;
+  }
+  const res = new Uint8Array(bytes.length + words * numBlocks);
+  let p = 0;
+  for (let i = 0; i <= blockLen; i++) {
+    for (const b of blocks) if (i < b.length) res[p++] = b[i];
+  }
+  for (let i = 0; i < words; i++) for (const e of eccs) res[p++] = e[i];
+  return res;
+}
+
+/**
+ * ISO/IEC 18004:2024 Table 10 mask predicates, evaluated arithmetically as an
+ * 8-bit vector (bit m set when mask predicate m fires at x,y). Shared with
+ * the decoder, which tests a single mask's bit to unmask read modules.
+ */
+function maskCalc(x: number, y: number): number {
+  const x2 = x % 2;
+  const y2 = y % 2;
+  const x3 = x % 3;
+  const xy3 = (x3 * (y % 3)) % 3;
+  const xy2 = x2 & y2;
+  let bits = 0;
+  if (x2 === y2) bits |= 1;
+  if (y2 === 0) bits |= 2;
+  if (x3 === 0) bits |= 4;
+  if ((x + y) % 3 === 0) bits |= 8;
+  if ((Math.floor(y / 2) + Math.floor(x / 3)) % 2 === 0) bits |= 16;
+  if (xy2 + xy3 === 0) bits |= 32;
+  if ((xy2 + xy3) % 2 === 0) bits |= 64;
+  if (((x2 ^ y2) + xy3) % 2 === 0) bits |= 128;
+  return bits;
+}
+// Every predicate is periodic in 6 columns and 12 rows, so the vector is a
+// 72-entry lookup filled once from the arithmetic.
+const MASK_TABLE: Uint8Array = /* @__PURE__ */ (() => {
+  const t = new Uint8Array(72);
+  for (let y = 0; y < 12; y++) for (let x = 0; x < 6; x++) t[y * 6 + x] = maskCalc(x, y);
+  return t;
+})();
+function maskBits(x: number, y: number): number {
+  return MASK_TABLE[(y % 12) * 6 + (x % 6)];
+}
+
+const POP16: Uint8Array = /* @__PURE__ */ (() => {
+  const t = new Uint8Array(1 << 16);
+  for (let i = 1; i < t.length; i++) t[i] = t[i >>> 1] + (i & 1);
+  return t;
+})();
+const popcnt = (n: number): number => POP16[n & 0xffff] + POP16[n >>> 16];
+
+const TRANSPOSE_TMP = /* @__PURE__ */ new Int32Array(32);
+// 32x32 in-place bit-matrix transpose (butterfly network).
+function transpose32(a: Int32Array): void {
+  const masks = [0x55555555, 0x33333333, 0x0f0f0f0f, 0x00ff00ff, 0x0000ffff];
+  for (let stage = 0; stage < 5; stage++) {
+    const m = masks[stage];
+    const s = 1 << stage;
+    for (let i = 0; i < 32; i += s << 1) {
+      for (let k = 0; k < s; k++) {
+        const x = a[i + k];
+        const y = a[i + k + s];
+        const t = ((x >>> s) ^ y) & m;
+        a[i + k] = x ^ (t << s);
+        a[i + k + s] = y ^ t;
+      }
+    }
+  }
+}
+
+// Packed square bit matrix: LSB-first bits, `words` i32 per row. Bits at
+// x >= size are kept zero — the penalty scanners rely on that invariant.
+// Signed words on purpose: every consumer is bitwise or popcount, and a
+// v1 symbol never sets bit 31, so an engine that meets v1 first specializes
+// on int32; the first full word from a Uint32Array then arrives as a double
+// and the recompiled mixed-type code stays slower for the whole process.
+type Mat = { size: number; words: number; v: Int32Array };
+const mat = (size: number): Mat => {
+  const words = (size + 31) >>> 5;
+  return { size, words, v: new Int32Array(words * size) };
+};
+const matGet = (m: Mat, x: number, y: number): number =>
+  (m.v[y * m.words + (x >>> 5)] >>> (x & 31)) & 1;
+const matSet = (m: Mat, x: number, y: number, bit: number): void => {
+  const i = y * m.words + (x >>> 5);
+  const b = 1 << (x & 31);
+  m.v[i] = bit ? m.v[i] | b : m.v[i] & ~b;
+};
+
+function transposeMat(src: Mat, dst: Mat): void {
+  const { size, words, v } = src;
+  const tmp = TRANSPOSE_TMP;
+  for (let by = 0; by < size; by += 32) {
+    for (let bx = 0; bx < words; bx++) {
+      const rows = Math.min(32, size - by);
+      for (let r = 0; r < rows; r++) tmp[r] = v[(by + r) * words + bx];
+      tmp.fill(0, rows);
+      transpose32(tmp);
+      for (let i = 0, dstY = bx * 32; i < 32 && dstY < size; i++, dstY++) {
+        dst.v[dstY * dst.words + (by >>> 5)] = tmp[i];
+      }
+    }
+  }
+}
+
+// N1: runs >= 5 score 3 + (L-5), over all columns at once (32 per stripe).
+// D_y = row^row+1 flags changes; a monochrome 5-window is 4 clear D bits, and
+// each run contributes (L-4) windows plus one run-start window counted twice.
+function runsPenaltyVertical(m: Mat): number {
+  const { size, words, v } = m;
+  const tail = size & 31 ? ~(-1 << (size & 31)) : -1;
+  let score = 0;
+  for (let wi = 0; wi < words; wi++) {
+    const valid = wi === words - 1 ? tail : -1;
+    let r3 = v[3 * words + wi];
+    let dPrev = -1;
+    let d0 = v[wi] ^ v[words + wi];
+    let d1 = v[words + wi] ^ v[2 * words + wi];
+    let d2 = v[2 * words + wi] ^ r3;
+    for (let y = 0, idx = 4 * words + wi; y <= size - 5; y++, idx += words) {
+      const r4 = v[idx];
+      const d3 = r3 ^ r4;
+      const w = ~(d0 | d1 | d2 | d3) & valid;
+      if (w) score += popcnt(w) + 2 * popcnt(w & dPrev);
+      dPrev = d0;
+      d0 = d1;
+      d1 = d2;
+      d2 = d3;
+      r3 = r4;
+    }
+  }
+  return score;
+}
+
+// N3: count 1011101 finder ratio with 4 light modules before/after, vertical,
+// both patterns at once across a 32-column stripe.
+function finderPenaltyVertical(m: Mat): number {
+  const { size, words, v } = m;
+  const tail = size & 31 ? ~(-1 << (size & 31)) : -1;
+  let count = 0;
+  for (let wi = 0; wi < words; wi++) {
+    const valid = wi === words - 1 ? tail : -1;
+    // The eleven-row window rolls down the stripe: ten words load once per
+    // column, then each row step loads one new word and shifts the rest.
+    let i = wi;
+    let r0 = v[i];
+    let r1 = v[(i += words)];
+    let r2 = v[(i += words)];
+    let r3 = v[(i += words)];
+    let r4 = v[(i += words)];
+    let r5 = v[(i += words)];
+    let r6 = v[(i += words)];
+    let r7 = v[(i += words)];
+    let r8 = v[(i += words)];
+    let r9 = v[(i += words)];
+    for (let y = 0; y <= size - 11; y++) {
+      const r10 = v[(i += words)];
+      const m0 = valid & r0 & ~r1 & r2 & r3 & r4 & ~r5 & r6 & ~(r7 | r8 | r9 | r10);
+      const m1 = valid & ~(r0 | r1 | r2 | r3) & r4 & ~r5 & r6 & r7 & r8 & ~r9 & r10;
+      count += popcnt(m0) + popcnt(m1);
+      r0 = r1;
+      r1 = r2;
+      r2 = r3;
+      r3 = r4;
+      r4 = r5;
+      r5 = r6;
+      r6 = r7;
+      r7 = r8;
+      r8 = r9;
+      r9 = r10;
+    }
+  }
+  return count;
+}
+
+function penalty(m: Mat, t: Mat): number {
+  transposeMat(m, t);
+  return penaltyScore(m, t);
+}
+
+// Score a symbol given both orientations. Split from penalty() so the 8-mask
+// loop can supply a transposed candidate assembled by XOR (transposition is a
+// bit permutation, so T(data^plane) = T(data)^T(plane)) instead of paying a
+// butterfly transpose per mask. `limit` is the best score seen so far in that
+// race: all terms are non-negative, so once a partial sum reaches it this
+// mask can no longer win and the remaining scans — notably the expensive N3
+// finder search — are skipped. The partial is only ever compared to `limit`.
+function penaltyScore(m: Mat, t: Mat, limit: number = Infinity): number {
+  const { size, words, v } = m;
+  const adjacent = runsPenaltyVertical(m) + runsPenaltyVertical(t);
+  if (adjacent >= limit) return adjacent;
+  // N2: 3 points per 2x2 same-color box (overlapping). Valid left-edge
+  // positions in the last word: one less than the bits it actually holds.
+  const tail2 = ~(-1 << (size - 32 * (words - 1) - 1));
+  let boxes = 0;
+  let dark = 0;
+  for (let y = 0; y < size; y++) {
+    for (let wi = 0; wi < words; wi++) {
+      const a0 = v[y * words + wi];
+      dark += popcnt(a0);
+      if (y === size - 1) continue;
+      const a1 = v[(y + 1) * words + wi];
+      const n0 = wi + 1 < words ? v[y * words + wi + 1] : 0;
+      const n1 = wi + 1 < words ? v[(y + 1) * words + wi + 1] : 0;
+      const eqV = ~(a0 ^ a1);
+      const eqH0 = ~(a0 ^ ((a0 >>> 1) | (n0 << 31)));
+      const eqH1 = ~(a1 ^ ((a1 >>> 1) | (n1 << 31)));
+      let w = eqV & eqH0 & eqH1;
+      if (wi === words - 1) w &= tail2;
+      boxes += popcnt(w);
+    }
+  }
+  const total = size * size;
+  const darkSteps = Math.ceil(
+    Math.max(0, Math.abs(dark * 100 - total * 50) - total * 5) / (total * 5)
+  );
+  const partial = adjacent + 3 * boxes + 10 * darkSteps;
+  if (partial >= limit) return partial;
+  return partial + 40 * (finderPenaltyVertical(m) + finderPenaltyVertical(t));
+}
+
+function drawInfo(m: Mat, ver: number, ecc: ErrorCorrection, mask: number): void {
+  const size = m.size;
+  const bits = formatBits(ecc, mask);
+  for (let i = 0; i < 15; i++) {
+    const bit = (bits >> i) & 1;
+    // Copy 1 around the top-left finder (skipping the timing row/column).
+    if (i < 6) matSet(m, 8, i, bit);
+    else if (i < 8) matSet(m, 8, i + 1, bit);
+    else if (i === 8) matSet(m, 7, 8, bit);
+    else matSet(m, 14 - i, 8, bit);
+    // Copy 2 under the top-right / right of the bottom-left finder.
+    if (i < 8) matSet(m, size - 1 - i, 8, bit);
+    else matSet(m, 8, size - 15 + i, bit);
+  }
+  matSet(m, 8, size - 8, 1); // dark module
+  if (ver >= 7) {
+    const vbits = versionBits(ver);
+    for (let i = 0; i < 18; i++) {
+      const bit = (vbits >> i) & 1;
+      const x = size - 11 + (i % 3);
+      const y = (i / 3) | 0;
+      matSet(m, x, y, bit);
+      matSet(m, y, x, bit);
+    }
+  }
+}
+
+// Everything the symbol layout alone determines, built once per version and
+// reused across encodes: the function-pattern template (data region zero),
+// the zigzag placement order as packed (wordIndex << 5 | bitOffset) pixel
+// positions, and the 8 mask XOR planes plus their transposes (for scoring
+// both orientations without a per-mask transpose). Single slot — workloads
+// overwhelmingly encode one version repeatedly; worst case (v40) ~190KB.
+type SymCache = {
+  ver: number;
+  tpl: Int32Array;
+  kinds: Uint8Array;
+  pos: Uint16Array;
+  pair: Int32Array;
+  planes: Int32Array[];
+  planesT: Int32Array[];
+  work: [Mat, Mat, Mat, Mat];
+};
+let symCache: SymCache | undefined;
+
+function buildSymCache(ver: number): SymCache {
+  const size = 21 + 4 * (ver - 1);
+  const m = mat(size);
+  const fun = new Uint8Array(size * size); // 1 = function or reserved cell
+  const kinds = new Uint8Array(size * size);
+  const setF = (x: number, y: number, bit: number, kind: number) => {
+    matSet(m, x, y, bit);
+    fun[y * size + x] = 1;
+    kinds[y * size + x] = kind;
+  };
+  // Finder patterns + separators (clipped at the edges).
+  for (const [fx, fy] of [
+    [0, 0],
+    [size - 7, 0],
+    [0, size - 7],
+  ]) {
+    for (let dy = -1; dy < 8; dy++) {
+      for (let dx = -1; dx < 8; dx++) {
+        const x = fx + dx;
+        const y = fy + dy;
+        if (x < 0 || y < 0 || x >= size || y >= size) continue;
+        const on =
+          dx >= 0 &&
+          dx < 7 &&
+          dy >= 0 &&
+          dy < 7 &&
+          (dx === 0 || dx === 6 || dy === 0 || dy === 6 || (dx > 1 && dx < 5 && dy > 1 && dy < 5));
+        const inside = dx >= 0 && dx < 7 && dy >= 0 && dy < 7;
+        const ring = dx === 0 || dx === 6 || dy === 0 || dy === 6;
+        const eye = dx > 1 && dx < 5 && dy > 1 && dy < 5;
+        const kind = !inside
+          ? KIND.Separator
+          : ring
+            ? KIND.FinderRing
+            : eye
+              ? KIND.FinderEye
+              : KIND.FinderGap;
+        setF(x, y, on ? 1 : 0, kind);
+      }
+    }
+  }
+  // Alignment patterns (skip those overlapping finders).
+  const align = alignmentPatterns(ver);
+  for (const ay of align) {
+    for (const ax of align) {
+      if (fun[ay * size + ax]) continue;
+      for (let dy = -2; dy <= 2; dy++) {
+        for (let dx = -2; dx <= 2; dx++) {
+          const ring = Math.max(Math.abs(dx), Math.abs(dy));
+          const kind =
+            ring === 2 ? KIND.AlignmentRing : ring === 1 ? KIND.AlignmentGap : KIND.AlignmentEye;
+          setF(ax + dx, ay + dy, ring !== 1 ? 1 : 0, kind);
+        }
+      }
+    }
+  }
+  // Timing patterns.
+  for (let i = 0; i < size; i++) {
+    if (!fun[6 * size + i]) setF(i, 6, i % 2 === 0 ? 1 : 0, KIND.Timing);
+    if (!fun[i * size + 6]) setF(6, i, i % 2 === 0 ? 1 : 0, KIND.Timing);
+  }
+  // Reserve format / version / dark-module cells at zero (the "test form"
+  // that mask penalties are scored on, python-qrcode compatible).
+  for (let i = 0; i < 9; i++) {
+    if (i !== 6) {
+      setF(8, i, 0, KIND.Format); // column right of the top-left finder, skip timing
+      setF(i, 8, 0, KIND.Format); // row under the top-left finder
+    }
+    if (i < 8) {
+      setF(size - 1 - i, 8, 0, KIND.Format); // under the top-right finder
+      setF(8, size - 1 - i, 0, KIND.Format); // right of the bottom-left finder + dark module
+    }
+  }
+  kinds[(size - 8) * size + 8] = KIND.DarkModule;
+  if (ver >= 7) {
+    for (let i = 0; i < 18; i++) {
+      const x = size - 11 + (i % 3);
+      const y = (i / 3) | 0;
+      setF(x, y, 0, KIND.Version);
+      setF(y, x, 0, KIND.Version);
+    }
+  }
+  // Zigzag placement order + per-mask XOR planes (data region only).
+  const planes: Mat[] = [];
+  for (let i = 0; i < 8; i++) planes.push(mat(size));
+  const posBuf = new Uint16Array(size * size);
+  let n = 0;
+  for (let xOffset = size - 1, dir = -1, y = size - 1; xOffset > 0; xOffset -= 2, dir = -dir) {
+    if (xOffset === 6) xOffset = 5; // skip the vertical timing column
+    for (; ; y += dir) {
+      for (let j = 0; j < 2; j++) {
+        const x = xOffset - j;
+        if (fun[y * size + x]) continue;
+        const wi = y * m.words + (x >>> 5);
+        posBuf[n++] = (wi << 5) | (x & 31);
+        for (let p = 0, mb = maskBits(x, y); mb; p++, mb >>= 1) {
+          if (mb & 1) planes[p].v[wi] |= 1 << (x & 31);
+        }
+      }
+      if (y + dir < 0 || y + dir >= size) break;
+    }
+  }
+  // The zigzag fills a two-module column, so consecutive positions mostly
+  // sit side by side in one word: such a pair is placed as one 2-bit OR.
+  // Entries are (wordIndex << 6 | shift << 1 | 1), or 0 where the pair
+  // straddles a word or a function pattern.
+  const pair = new Int32Array(n >>> 1);
+  for (let i = 0; i + 1 < n; i += 2) {
+    const a = posBuf[i];
+    const b = posBuf[i + 1];
+    if (a >>> 5 === b >>> 5 && (a & 31) === (b & 31) + 1) {
+      pair[i >>> 1] = ((a >>> 5) << 6) | ((b & 31) << 1) | 1;
+    }
+  }
+  const planesT = planes.map((p) => {
+    const t = mat(size);
+    transposeMat(p, t);
+    return t.v;
+  });
+  return {
+    ver,
+    tpl: m.v,
+    kinds,
+    pos: posBuf.slice(0, n),
+    pair,
+    planes: planes.map((p) => p.v),
+    planesT,
+    work: [mat(size), mat(size), mat(size), mat(size)],
+  };
+}
+
+// Template copy + data-bit scatter along the cached zigzag order, then mask
+// selection: XOR candidates wordwise (both orientations, from the cached
+// transposed planes), score the test form, keep the first lowest
+// (deterministic ties, python-qrcode compatible).
+function drawSymbol(
+  ver: number,
+  ecc: ErrorCorrection,
+  data: Uint8Array,
+  maskIdx?: number,
+  test = false
+): { m: Mat; mask: number; kinds: Uint8Array } {
+  if (symCache === undefined || symCache.ver !== ver) symCache = buildSymCache(ver);
+  const { tpl, pos, pair, planes, planesT, work } = symCache;
+  const [m, t, cand, candT] = work;
+  m.v.set(tpl);
+  const need = Math.min(8 * data.length, pos.length); // trailing remainder bits stay 0
+  for (let i = 0; i < need; i += 2) {
+    const two = (data[i >>> 3] >>> (6 - (i & 7))) & 3;
+    if (two === 0) continue;
+    const pr = pair[i >>> 1];
+    if (pr & 1) m.v[pr >>> 6] |= two << ((pr >>> 1) & 31);
+    else {
+      if (two & 2) {
+        const p = pos[i];
+        m.v[p >>> 5] |= 1 << (p & 31);
+      }
+      if (two & 1) {
+        const p = pos[i + 1];
+        m.v[p >>> 5] |= 1 << (p & 31);
+      }
+    }
+  }
+  let mask = maskIdx;
+  if (mask === undefined) {
+    transposeMat(m, t); // the only transpose per encode; every mask reuses it
+    let bestScore = Infinity;
+    for (let p = 0; p < 8; p++) {
+      const pv = planes[p];
+      const ptv = planesT[p];
+      for (let i = 0; i < cand.v.length; i++) {
+        cand.v[i] = m.v[i] ^ pv[i];
+        candT.v[i] = t.v[i] ^ ptv[i];
+      }
+      const score = penaltyScore(cand, candT, bestScore);
+      if (score < bestScore) {
+        bestScore = score;
+        mask = p;
+      }
+    }
+  }
+  const pv = planes[mask!];
+  for (let i = 0; i < m.v.length; i++) m.v[i] ^= pv[i];
+  if (!test) drawInfo(m, ver, ecc, mask!);
+  return { m, mask: mask!, kinds: symCache.kinds };
+}
+
+const asNum = (n: unknown, title: string): number => {
+  if (typeof n !== 'number')
+    throw new TypeError(`"${title}" expected number, got type=${typeof n}`);
+  if (!Number.isSafeInteger(n)) throw new RangeError(`"${title}" expected safe integer, got ${n}`);
+  return n as number;
+};
+const asString = (s: unknown, title: string): string => {
+  if (typeof s !== 'string')
+    throw new TypeError(`"${title}" expected string, got type=${typeof s}`);
+  return s;
+};
+
+// Exact byte count produced by WHATWG TextEncoder, without allocating the
+// encoded buffer. Lone surrogates become the three-byte replacement character.
+function utf8Length(str: string): number {
+  let length = 0;
+  for (let i = 0; i < str.length; i++) {
+    const c = str.charCodeAt(i);
+    if (c < 0x80) length++;
+    else if (c < 0x800) length += 2;
+    else if (c < 0xd800 || c > 0xdfff) length += 3;
+    else if (c <= 0xdbff && i + 1 < str.length) {
+      const next = str.charCodeAt(i + 1);
+      if (next >= 0xdc00 && next <= 0xdfff) {
+        length += 4;
+        i++;
+      } else length += 3;
+    } else length += 3;
+  }
+  return length;
+}
+
+function byteCapacity(ver: number, ecc: ErrorCorrection): number {
+  const lengthBits = LENGTH_BITS.byte[Math.floor((ver + 7) / 17)];
+  return Math.min(
+    (1 << lengthBits) - 1,
+    Math.floor((capacity(ver, ecc).capacity - 4 - lengthBits) / 8)
+  );
+}
+
+// Copied from noble/hashes utils.ts.
+export function _isBytes(a: unknown): a is Uint8Array {
+  // Plain `instanceof Uint8Array` is too strict for some Buffer / proxy / cross-realm cases.
+  // The fallback still requires a real ArrayBuffer view, so plain
+  // JSON-deserialized `{ constructor: ... }` spoofing is rejected, and
+  // `BYTES_PER_ELEMENT === 1` keeps the fallback on byte-oriented views.
+  return (
+    a instanceof Uint8Array ||
+    (ArrayBuffer.isView(a) &&
+      a.constructor.name === 'Uint8Array' &&
+      'BYTES_PER_ELEMENT' in a &&
+      a.BYTES_PER_ELEMENT === 1)
+  );
+}
+
+// ---------------------------------------------------------------------------
+// kyuar additions
+// ---------------------------------------------------------------------------
+
+/** Options for {@link encodeSymbol}. */
+export type EncodeOpts = {
+  ecc?: ErrorCorrection;
+  version?: number;
+  minVersion?: number;
+  mask?: number;
+  boostEcc?: boolean;
+};
+
+/** A drawn symbol without quiet zone: one byte per module, row-major. */
+export type EncodedSymbol = {
+  size: number;
+  version: number;
+  mask: number;
+  ecc: ErrorCorrection;
+  modules: Uint8Array;
+  kinds: Uint8Array;
+};
+
+function fits(ver: number, ecc: ErrorCorrection, encoding: EncodingType, dataLen: number): boolean {
+  const lengthBits = LENGTH_BITS[encoding][Math.floor((ver + 7) / 17)];
+  const encodedBits =
+    encoding === 'numeric'
+      ? Math.floor(dataLen / 3) * 10 + [0, 4, 7][dataLen % 3]
+      : encoding === 'alphanumeric'
+        ? Math.floor(dataLen / 2) * 11 + (dataLen % 2) * 6
+        : dataLen * 8;
+  return dataLen < 1 << lengthBits && 4 + lengthBits + encodedBits <= capacity(ver, ecc).capacity;
+}
+
+/**
+ * Encodes text into a symbol matrix with per-module kinds. Picks the smallest
+ * version that fits (never below `minVersion`) and, with `boostEcc`, raises the
+ * error correction level as far as that version allows. Text that is not
+ * numeric or alphanumeric is encoded as UTF-8 bytes.
+ */
+export function encodeSymbol(text: string, opts: EncodeOpts = {}): EncodedSymbol {
+  asString(text, 'text');
+  let ecc = opts.ecc !== undefined ? opts.ecc : 'medium';
+  if (!ECC_LEVELS.includes(ecc)) err(`invalid ecc=${ecc}`);
+  if (opts.mask !== undefined && (asNum(opts.mask, 'opts.mask') < 0 || opts.mask > 7))
+    err(`invalid mask=${opts.mask}`);
+  const encoding = detectType(text);
+  const utf8 = encoding === 'byte' ? new TextEncoder().encode(text) : undefined;
+  const dataLen = utf8 !== undefined ? utf8.length : text.length;
+  let ver = opts.version !== undefined ? asVersion(opts.version) : undefined;
+  if (ver === undefined) {
+    const start = opts.minVersion !== undefined ? asVersion(opts.minVersion) : 1;
+    for (ver = start; ver <= 40; ver++) if (fits(ver, ecc, encoding, dataLen)) break;
+    if (ver > 40) err('Capacity overflow');
+  } else if (!fits(ver, ecc, encoding, dataLen)) err('Capacity overflow');
+  if (opts.boostEcc) {
+    for (let i = ECC_LEVELS.indexOf(ecc) + 1; i < ECC_LEVELS.length; i++) {
+      if (!fits(ver, ECC_LEVELS[i], encoding, dataLen)) break;
+      ecc = ECC_LEVELS[i];
+    }
+  }
+  const data = encodeData(ver, ecc, text, encoding, utf8);
+  const { m, mask, kinds } = drawSymbol(ver, ecc, data, opts.mask);
+  const modules = new Uint8Array(m.size * m.size);
+  for (let y = 0; y < m.size; y++) {
+    for (let x = 0; x < m.size; x++) modules[y * m.size + x] = matGet(m, x, y);
+  }
+  return { size: m.size, version: ver, mask, ecc, modules, kinds: kinds.slice() };
+}

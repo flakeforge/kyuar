@@ -73,16 +73,25 @@ lefthook `commit-msg` hook. Keep the body short or leave it out. Do not add
 ```
 apps/web      Next.js 16 app: mini app UI, /api/qr, /api/bot webhook
 apps/bot      grammy handlers and the development long-polling runner
-packages/qr   framework-agnostic QR matrix renderer (SVG out)
+packages/qr   styled SVG renderer: figures, paints, halftone, logo area
+packages/qr-encoder  encoder vendored from paulmillr/qr, adds module kinds
 packages/env  envin schema, the single source of truth for configuration
 packages/shared  zod schemas, option codec, Telegram initData verification
 ```
 
 ## Constraints that are easy to get wrong
 
-- **`uqr.encode()` returns both `data` and `types`.** Use `types` to style
-  finder patterns separately from data modules. Do not re-detect them by
-  coordinate math.
+- **The encoder records a kind for every module.** `encodeSymbol()` in
+  `@kyuar/qr-encoder` returns `kinds` (finder ring, gap, eye, separator,
+  alignment, timing, format, version, dark module, data). Style by kind. Do not
+  re-detect patterns by coordinate math.
+- **`packages/qr-encoder/src/encoder.ts` is vendored.** Keep upstream style so
+  it stays diffable, mark kyuar changes in its header, and keep its public
+  types in `src/index.d.ts` in sync. It is excluded from oxlint and oxfmt.
+- **Every style must scan.** `packages/qr/src/render.test.ts` decodes every
+  shape. A new shape that fails there is removed, not shipped.
+- **Third-party code needs credit.** Update `THIRD_PARTY_NOTICES.md` and the
+  README credits when you copy or port code.
 - **Telegram inline results cannot carry SVG.** Inline mode needs a public
   PNG URL, which is what `/api/qr` serves.
 - **`shareMessage()` needs a server round trip.** Call

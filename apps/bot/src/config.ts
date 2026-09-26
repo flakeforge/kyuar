@@ -1,5 +1,5 @@
 import env from "@kyuar/env";
-import { DEFAULT_THEME } from "@kyuar/qr";
+import { DEFAULT_STYLE, DEFAULT_THEME, withColors, type QrTheme } from "@kyuar/qr";
 import {
   buildQrUrl,
   classifyContent,
@@ -17,15 +17,13 @@ export const BOT_USERNAME = env.BOT_USERNAME;
  * handler and the private-chat handler go through this so a code generated in
  * a chat looks identical to one generated in the mini app.
  */
-export function defaultRequest(input: string, overrides: Partial<QrRequest> = {}): QrRequest {
+export function defaultRequest(input: string, theme: QrTheme = DEFAULT_THEME): QrRequest {
   const content = classifyContent(input);
 
   return qrRequestSchema.parse({
     data: content.value,
-    foreground: DEFAULT_THEME.foreground,
-    background: DEFAULT_THEME.background,
     format: "png",
-    ...overrides,
+    style: withColors(DEFAULT_STYLE, theme.foreground, theme.background),
   });
 }
 

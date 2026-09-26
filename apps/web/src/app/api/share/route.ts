@@ -1,6 +1,6 @@
-import { defaultRequest, getBot, imageUrl, startAppUrl } from "@kyuar/bot";
+import { getBot, imageUrl, startAppUrl } from "@kyuar/bot";
 import env from "@kyuar/env";
-import { shareRequestSchema } from "@kyuar/shared";
+import { qrRequestSchema, shareRequestSchema } from "@kyuar/shared";
 import { InitDataError, verifyInitData } from "@kyuar/shared/server";
 import { NextResponse } from "next/server";
 
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
   }
 
   const { title, ...options } = parsed.data;
-  const qrRequest = defaultRequest(options.data, { ...options, format: "png" });
+  const qrRequest = qrRequestSchema.parse({ ...options, format: "png" });
   const url = imageUrl(qrRequest);
 
   try {

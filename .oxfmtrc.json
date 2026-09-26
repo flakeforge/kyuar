@@ -18,6 +18,7 @@
     "**/dist/**",
     ".claude/**",
     "pnpm-lock.yaml",
-    "LICENSE"
+    "LICENSE",
+    "packages/qr-encoder/src/encoder.ts"
   ]
 }

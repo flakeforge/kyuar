@@ -1,47 +1,45 @@
+import { DEFAULT_STYLE, type QrStyle } from "@kyuar/qr";
+
+import { fromBase64Url, toBase64Url } from "./base64url";
 import { qrRequestSchema, type QrRequest } from "./schema";
 
-const SHORT_KEYS = {
-  data: "d",
-  ecc: "e",
-  moduleStyle: "m",
-  finderStyle: "f",
-  foreground: "fg",
-  background: "bg",
-  margin: "b",
-  moduleSize: "s",
-  cornerRadius: "r",
-  logoRatio: "l",
-  format: "t",
-} as const satisfies Record<keyof QrRequest, string>;
+function changedSections(style: QrStyle): Partial<QrStyle> {
+  const changed: Partial<Record<keyof QrStyle, unknown>> = {};
+  for (const key of Object.keys(style) as (keyof QrStyle)[]) {
+    if (JSON.stringify(style[key]) !== JSON.stringify(DEFAULT_STYLE[key])) {
+      changed[key] = style[key];
+    }
+  }
+  return changed as Partial<QrStyle>;
+}
 
 /**
- * Serialises QR options into the compact query string used by `/api/qr`.
- * Colors drop their leading `#` so the URL stays readable when Telegram
- * renders it as a link preview.
+ * Serialises a QR request into the query string used by `/api/qr`: `d` is the
+ * data, `t` the format and `s` the style sections that differ from the
+ * defaults, as base64url JSON. Unchanged styles produce short, cacheable URLs.
  */
 export function encodeQrQuery(request: QrRequest): string {
-  const params = new URLSearchParams();
-
-  for (const [key, short] of Object.entries(SHORT_KEYS) as [keyof QrRequest, string][]) {
-    const value = request[key];
-    if (value === undefined) continue;
-    const isColor = key === "foreground" || key === "background";
-    params.set(short, isColor ? String(value).replace(/^#/, "") : String(value));
-  }
-
+  const params = new URLSearchParams({ d: request.data, t: request.format });
+  const changed = changedSections(request.style);
+  if (Object.keys(changed).length > 0) params.set("s", toBase64Url(JSON.stringify(changed)));
   return params.toString();
 }
 
 export function decodeQrQuery(params: URLSearchParams): QrRequest {
-  const raw: Record<string, string> = {};
+  const encodedStyle = params.get("s");
+  let style: unknown;
 
-  for (const [key, short] of Object.entries(SHORT_KEYS) as [keyof QrRequest, string][]) {
-    const value = params.get(short) ?? params.get(key);
-    if (value === null) continue;
-    raw[key] = key === "foreground" || key === "background" ? `#${value.replace(/^#/, "")}` : value;
+  if (encodedStyle) {
+    const json = fromBase64Url(encodedStyle);
+    if (json === undefined) throw new Error("Style is not valid base64url");
+    style = JSON.parse(json);
   }
 
-  return qrRequestSchema.parse(raw);
+  return qrRequestSchema.parse({
+    data: params.get("d") ?? undefined,
+    format: params.get("t") ?? undefined,
+    style,
+  });
 }
 
 export function buildQrUrl(origin: string, request: QrRequest): string {

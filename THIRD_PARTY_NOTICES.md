@@ -34,7 +34,8 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.```
+THE SOFTWARE.
+```
 
 ## liquid-js/qr-code-styling
 
@@ -44,7 +45,7 @@ THE SOFTWARE.```
   ported from DOM elements to SVG path strings)
 - License: MIT
 
-````
+```
 
 MIT License
 
@@ -81,3 +82,4 @@ Codes". ACM Transactions on Graphics 32(6), SIGGRAPH Asia 2013.
 
 The implementation was written from the paper. No code was copied.
 ```
+````

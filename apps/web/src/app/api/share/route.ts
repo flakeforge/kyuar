@@ -33,7 +33,7 @@ export async function POST(request: Request) {
   }
 
   const { title, ...options } = parsed.data;
-  const qrRequest = qrRequestSchema.parse({ ...options, format: "png" });
+  const qrRequest = qrRequestSchema.parse({ ...options, format: "jpg" });
   const url = imageUrl(qrRequest);
 
   try {

@@ -92,8 +92,11 @@ packages/shared  zod schemas, option codec, Telegram initData verification
   shape. A new shape that fails there is removed, not shipped.
 - **Third-party code needs credit.** Update `THIRD_PARTY_NOTICES.md` and the
   README credits when you copy or port code.
-- **Telegram inline results cannot carry SVG.** Inline mode needs a public
-  PNG URL, which is what `/api/qr` serves.
+- **Telegram inline results cannot carry SVG.** Inline photos must be JPEG
+  per the Bot API, so the bot links to `/api/qr?t=jpg`, which `sharp`
+  converts from the resvg PNG.
+- **resvg must not load system fonts.** Pass `font: { loadSystemFonts: false }`.
+  QR SVGs have no text, and font loading costs about 2.4 s per render.
 - **`shareMessage()` needs a server round trip.** Call
   `savePreparedInlineMessage` from the bot first, then pass the returned id to
   the client.

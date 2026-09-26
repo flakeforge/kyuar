@@ -23,6 +23,9 @@ const env = defineEnv({
         "APP_URL must use https in production, Telegram rejects other Mini App URLs",
       ),
     CLOUDFLARE_TUNNEL_TOKEN: z.string().optional(),
+    REDIS_URL: z.url("REDIS_URL must be a redis:// URL").optional(),
+    RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).default(120),
+    CLIENT_IP_HEADER: z.string().min(1).default("x-forwarded-for"),
   },
 
   env: process.env,

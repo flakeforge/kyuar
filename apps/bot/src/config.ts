@@ -22,7 +22,7 @@ export function defaultRequest(input: string, theme: QrTheme = DEFAULT_THEME): Q
 
   return qrRequestSchema.parse({
     data: content.value,
-    format: "png",
+    format: "jpg",
     style: withColors(DEFAULT_STYLE, theme.foreground, theme.background),
   });
 }

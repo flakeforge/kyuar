@@ -11,7 +11,7 @@ const config: NextConfig = {
     "@kyuar/bot",
   ],
 
-  serverExternalPackages: ["@resvg/resvg-js", "grammy"],
+  serverExternalPackages: ["@resvg/resvg-js", "grammy", "sharp", "@redis/client"],
 
   experimental: {
     optimizePackageImports: ["@base-ui/react"],

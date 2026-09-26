@@ -55,7 +55,8 @@
       {
         "case": "kebabCase"
       }
-    ]
+    ],
+    "react-perf/jsx-no-jsx-as-prop": "off"
   },
   "overrides": [
     {
@@ -68,6 +69,14 @@
       "files": ["**/*.config.*", "scripts/**"],
       "rules": {
         "eslint/no-console": "off"
+      }
+    },
+    {
+      "files": ["packages/ui/src/components/**"],
+      "rules": {
+        "jsx-a11y/prefer-tag-over-role": "off",
+        "jsx-a11y/label-has-associated-control": "off",
+        "react/no-object-type-as-default-prop": "off"
       }
     }
   ],

@@ -7,7 +7,13 @@ import { useCallback, useMemo, useState } from "react";
 import { ControlRow } from "~/components/control-row";
 import { QrCanvas } from "~/components/qr-canvas";
 import { ThemePicker } from "~/components/theme-picker";
-import { getWebApp, haptic } from "~/lib/telegram";
+import {
+  download as telegramDownload,
+  haptic,
+  rawInitData,
+  setHeaderColor,
+  share as telegramShare,
+} from "~/lib/telegram";
 import { useTelegram } from "~/lib/use-telegram";
 
 const FINDER_CYCLE = ["dot", "extra-rounded", "classy", "square"] as const;
@@ -18,7 +24,7 @@ interface EditorProps {
 }
 
 export function Editor({ initialData }: EditorProps) {
-  const { app, setAccent } = useTelegram();
+  const isTelegram = useTelegram();
 
   const [value, setValue] = useState(initialData);
   const [theme, setTheme] = useState<QrTheme>(DEFAULT_THEME);
@@ -40,15 +46,12 @@ export function Editor({ initialData }: EditorProps) {
 
   const options = useMemo(() => ({ data: content.value, style }), [content.value, style]);
 
-  const applyTheme = useCallback(
-    (next: QrTheme) => {
-      setTheme(next);
-      setAccent(next.background);
-      document.documentElement.style.setProperty("--accent", next.background);
-      document.documentElement.style.setProperty("--accent-ink", next.foreground);
-    },
-    [setAccent],
-  );
+  const applyTheme = useCallback((next: QrTheme) => {
+    setTheme(next);
+    setHeaderColor(next.background);
+    document.documentElement.style.setProperty("--theme", next.background);
+    document.documentElement.style.setProperty("--theme-ink", next.foreground);
+  }, []);
 
   const selectTheme = useCallback(
     (next: QrTheme) => {
@@ -66,22 +69,17 @@ export function Editor({ initialData }: EditorProps) {
     haptic("impact");
   }, [applyTheme, theme.id]);
 
-  const download = useCallback(() => {
+  const download = useCallback(async () => {
     const request = qrRequestSchema.parse({ ...options, format: "png" });
     const url = buildQrUrl(window.location.origin, request);
-    const webApp = getWebApp();
-
-    if (webApp?.downloadFile) {
-      webApp.downloadFile({ url, file_name: "kyuar.png" });
-    } else {
-      window.open(url, "_blank", "noopener,noreferrer");
-    }
+    const handled = await telegramDownload(url, "kyuar.png");
+    if (!handled) window.open(url, "_blank", "noopener,noreferrer");
     haptic("success");
   }, [options]);
 
   const share = useCallback(async () => {
-    const webApp = getWebApp();
-    if (!webApp?.initData || !webApp.shareMessage) {
+    const initData = rawInitData();
+    if (!initData) {
       window.open(
         buildQrUrl(window.location.origin, qrRequestSchema.parse({ ...options, format: "png" })),
         "_blank",
@@ -96,7 +94,7 @@ export function Editor({ initialData }: EditorProps) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-telegram-init-data": webApp.initData,
+          "x-telegram-init-data": initData,
         },
         body: JSON.stringify(options),
       });
@@ -104,7 +102,7 @@ export function Editor({ initialData }: EditorProps) {
       if (!response.ok) throw new Error("share failed");
 
       const { id } = (await response.json()) as { id: string };
-      webApp.shareMessage(id);
+      await telegramShare(id);
       haptic("success");
     } catch {
       haptic("impact");
@@ -142,7 +140,7 @@ export function Editor({ initialData }: EditorProps) {
       <nav className="fixed inset-x-0 bottom-0 mx-auto flex w-full max-w-md items-center justify-center gap-3 px-4 pb-6">
         <button
           type="button"
-          onClick={download}
+          onClick={() => void download()}
           aria-label="Download"
           className="ease-snap grid size-14 place-items-center rounded-full bg-white/90 shadow-lg shadow-black/10 backdrop-blur transition-transform duration-150 active:scale-90"
         >
@@ -153,7 +151,7 @@ export function Editor({ initialData }: EditorProps) {
           type="button"
           onClick={shuffle}
           aria-label="Shuffle style"
-          className="ease-snap grid h-14 w-24 place-items-center rounded-full text-(--accent-ink) shadow-lg shadow-black/20 transition-transform duration-150 active:scale-90"
+          className="ease-snap grid h-14 w-24 place-items-center rounded-full text-(--theme-ink) shadow-lg shadow-black/20 transition-transform duration-150 active:scale-90"
           style={{ background: theme.background }}
         >
           <ShuffleIcon />
@@ -162,7 +160,7 @@ export function Editor({ initialData }: EditorProps) {
         <button
           type="button"
           onClick={() => void share()}
-          disabled={isSharing || !app}
+          disabled={isSharing || !isTelegram}
           aria-label="Share to Telegram"
           className="ease-snap grid size-14 place-items-center rounded-full bg-white/90 shadow-lg shadow-black/10 backdrop-blur transition-transform duration-150 active:scale-90 disabled:opacity-50"
         >

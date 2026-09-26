@@ -1,54 +1,102 @@
-export interface TelegramWebApp {
-  initData: string;
-  version: string;
-  platform: string;
-  colorScheme: "light" | "dark";
-  isExpanded: boolean;
-  ready: () => void;
-  expand: () => void;
-  close: () => void;
-  isVersionAtLeast: (version: string) => boolean;
-  setHeaderColor: (color: string) => void;
-  setBackgroundColor: (color: string) => void;
-  setBottomBarColor?: (color: string) => void;
-  disableVerticalSwipes?: () => void;
-  requestFullscreen?: () => void;
-  openLink: (url: string, options?: { try_instant_view?: boolean }) => void;
-  switchInlineQuery?: (query: string, chatTypes?: string[]) => void;
-  shareMessage?: (id: string, callback?: (sent: boolean) => void) => void;
-  downloadFile?: (
-    params: { url: string; file_name: string },
-    callback?: (accepted: boolean) => void,
-  ) => void;
-  showScanQrPopup?: (params: { text?: string }, callback?: (data: string) => boolean) => void;
-  HapticFeedback?: {
-    impactOccurred: (style: "light" | "medium" | "heavy" | "rigid" | "soft") => void;
-    notificationOccurred: (type: "error" | "success" | "warning") => void;
-    selectionChanged: () => void;
-  };
+import {
+  downloadFile,
+  hapticFeedback,
+  init,
+  isTMA,
+  miniApp,
+  retrieveLaunchParams,
+  retrieveRawInitData,
+  shareMessage,
+  swipeBehavior,
+  viewport,
+} from "@tma.js/sdk-react";
+
+const MOBILE_PLATFORMS: ReadonlySet<string> = new Set(["ios", "android", "android_x"]);
+
+let started = false;
+const listeners = new Set<VoidFunction>();
+
+export function subscribeTelegram(listener: VoidFunction): VoidFunction {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
 }
 
-declare global {
-  interface Window {
-    Telegram?: { WebApp?: TelegramWebApp };
+export function isTelegramStarted(): boolean {
+  return started;
+}
+
+function isMobile() {
+  try {
+    return MOBILE_PLATFORMS.has(retrieveLaunchParams().tgWebAppPlatform);
+  } catch {
+    return false;
   }
 }
 
-export function getWebApp(): TelegramWebApp | undefined {
-  if (typeof window === "undefined") return undefined;
-  return window.Telegram?.WebApp;
+async function enterFullscreen() {
+  if (!viewport.mount.isAvailable()) return;
+  await viewport.mount();
+  viewport.bindCssVars.ifAvailable();
+  viewport.expand.ifAvailable();
+  if (viewport.requestFullscreen.isAvailable()) {
+    await viewport.requestFullscreen().catch(() => undefined);
+  }
 }
 
-export function isInsideTelegram(): boolean {
-  const app = getWebApp();
-  return Boolean(app?.initData);
+/**
+ * Starts the Mini App SDK once. On phones the app opens expanded and
+ * fullscreen; desktop and web clients keep the size Telegram gives them.
+ * Returns false outside Telegram, where the page works as a plain website.
+ */
+export function startTelegram(): boolean {
+  if (!isTMA()) return false;
+  if (started) return true;
+  started = true;
+
+  init();
+  miniApp.mount.ifAvailable();
+  miniApp.ready.ifAvailable();
+  swipeBehavior.mount.ifAvailable();
+  swipeBehavior.disableVertical.ifAvailable();
+
+  if (isMobile()) void enterFullscreen();
+  for (const listener of listeners) listener();
+  return true;
 }
 
-export function haptic(kind: "select" | "impact" | "success" = "select") {
-  const feedback = getWebApp()?.HapticFeedback;
-  if (!feedback) return;
+export function setHeaderColor(color: string) {
+  if (!started) return;
+  miniApp.setHeaderColor.ifAvailable(color as `#${string}`);
+}
 
-  if (kind === "select") feedback.selectionChanged();
-  else if (kind === "impact") feedback.impactOccurred("medium");
-  else feedback.notificationOccurred("success");
+export function rawInitData(): string | undefined {
+  if (!started) return undefined;
+  try {
+    return retrieveRawInitData();
+  } catch {
+    return undefined;
+  }
+}
+
+export function haptic(kind: "select" | "impact" | "success" | "error" = "select") {
+  if (!started) return;
+  if (kind === "select") hapticFeedback.selectionChanged.ifAvailable();
+  else if (kind === "impact") hapticFeedback.impactOccurred.ifAvailable("medium");
+  else hapticFeedback.notificationOccurred.ifAvailable(kind);
+}
+
+export async function download(url: string, fileName: string): Promise<boolean> {
+  if (started && downloadFile.isAvailable()) {
+    await downloadFile(url, fileName);
+    return true;
+  }
+  return false;
+}
+
+export async function share(messageId: string): Promise<boolean> {
+  if (started && shareMessage.isAvailable()) {
+    await shareMessage(messageId);
+    return true;
+  }
+  return false;
 }

@@ -75,6 +75,7 @@ apps/web      Next.js 16 app: mini app UI, /api/qr, /api/bot webhook
 apps/bot      grammy handlers and the development long-polling runner
 packages/qr   styled SVG renderer: figures, paints, halftone, logo area
 packages/qr-encoder  encoder vendored from paulmillr/qr, adds module kinds
+packages/ui   shadcn/ui components on Base UI, tokens in src/styles/globals.css
 packages/env  envin schema, the single source of truth for configuration
 packages/shared  zod schemas, option codec, Telegram initData verification
 ```
@@ -108,4 +109,11 @@ packages/shared  zod schemas, option codec, Telegram initData verification
 - **`web_app` buttons only work in private chats.** Anything that can land in a
   group or channel links to `t.me/<bot>?startapp=<base64url>` instead.
 - **Do not adapt the UI to Telegram `themeParams`.** kyuar has its own color
-  system. Only the header color is synced.
+  system. Only the header color is synced. The selected QR theme drives
+  `--theme` and `--theme-ink`; every shadcn token is derived from them.
+- **UI comes from `@kyuar/ui`.** Add components with `just ui-add <name>`,
+  never hand-write a styled div when a component exists. The base is Base UI:
+  compose with `render`, not `asChild`, and use `toast` from
+  `@kyuar/ui/lib/toast`, not sonner.
+- **Telegram SDK is `@tma.js/sdk-react`.** It lives behind `apps/web/src/lib/telegram.ts`.
+  Phones open expanded and fullscreen; desktop clients are left alone.

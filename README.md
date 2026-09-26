@@ -105,6 +105,7 @@ apps/web          Next.js 16 app: Mini App UI, /api/qr, /api/bot, /api/share
 apps/bot          grammy handlers and the development long-polling runner
 packages/qr       styled SVG renderer: shapes, paints, halftone, logo area
 packages/qr-encoder  QR encoder with per-module kinds, vendored from paulmillr/qr
+packages/ui       shadcn/ui components on Base UI
 packages/shared   zod schemas, option codec, Telegram initData verification
 packages/env      envin schema, the single source of truth for configuration
 brand/            logo, icons and Lottie animation

@@ -15,6 +15,7 @@ COPY apps/bot/package.json ./apps/bot/
 COPY packages/env/package.json ./packages/env/
 COPY packages/qr/package.json ./packages/qr/
 COPY packages/qr-encoder/package.json ./packages/qr-encoder/
+COPY packages/ui/package.json ./packages/ui/
 COPY packages/shared/package.json ./packages/shared/
 
 RUN pnpm install --frozen-lockfile
@@ -37,6 +38,7 @@ COPY --from=deps /app/apps/bot/node_modules ./apps/bot/node_modules
 COPY --from=deps /app/packages/env/node_modules ./packages/env/node_modules
 COPY --from=deps /app/packages/qr/node_modules ./packages/qr/node_modules
 COPY --from=deps /app/packages/qr-encoder/node_modules ./packages/qr-encoder/node_modules
+COPY --from=deps /app/packages/ui/node_modules ./packages/ui/node_modules
 COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
 COPY . .
 

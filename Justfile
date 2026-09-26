@@ -133,6 +133,11 @@ test *args:
 test-watch *args:
     pnpm exec vitest {{ args }}
 
+[doc('Add shadcn/ui components to packages/ui')]
+[group('quality')]
+ui-add +names:
+    pnpm dlx shadcn@latest add {{ names }} -c apps/web
+
 [doc('Find unused files, exports and dependencies')]
 [group('quality')]
 knip:

@@ -164,7 +164,7 @@ clean:
 [doc('Manage the Telegram webhook')]
 [group('telegram')]
 webhook action="info":
-    pnpm --filter @kyuar/bot exec tsx src/scripts/webhook.ts {{ action }}
+    pnpm --filter @kyuar/bot webhook {{ action }}
 
 [doc('Point the Telegram webhook at NEXT_PUBLIC_APP_URL')]
 [group('telegram')]

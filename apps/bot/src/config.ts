@@ -8,9 +8,9 @@ import {
   type QrRequest,
 } from "@kyuar/shared";
 
-export const APP_URL = env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "");
+export const APP_URL = env.APP_URL;
 
-export const BOT_USERNAME = env.NEXT_PUBLIC_BOT_USERNAME;
+export const BOT_USERNAME = env.BOT_USERNAME;
 
 /**
  * Builds the default QR request for a piece of user input. Both the inline

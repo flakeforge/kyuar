@@ -21,16 +21,12 @@ RUN pnpm install --frozen-lockfile
 # ---------------------------------------------------------------------------
 # Build
 #
-# NEXT_PUBLIC_* values are inlined into the client bundle at build time, so they
-# arrive as build args. Everything else is read from the environment at runtime.
+# Configuration is read at runtime, so the image does not depend on the
+# deployment it runs in.
 # ---------------------------------------------------------------------------
 FROM base AS builder
 WORKDIR /app
 
-ARG NEXT_PUBLIC_APP_URL
-ARG NEXT_PUBLIC_BOT_USERNAME
-ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
-ENV NEXT_PUBLIC_BOT_USERNAME=$NEXT_PUBLIC_BOT_USERNAME
 ENV SKIP_ENV_VALIDATION=true
 ENV NEXT_TELEMETRY_DISABLED=1
 

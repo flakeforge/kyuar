@@ -11,17 +11,18 @@ const env = defineEnv({
     BOT_WEBHOOK_SECRET: z
       .string()
       .min(16, "BOT_WEBHOOK_SECRET must be at least 16 characters, run: just secret"),
-    CLOUDFLARE_TUNNEL_TOKEN: z.string().optional(),
-  },
-
-  clientPrefix: "NEXT_PUBLIC_",
-
-  client: {
-    NEXT_PUBLIC_APP_URL: z.url("NEXT_PUBLIC_APP_URL must be an absolute URL"),
-    NEXT_PUBLIC_BOT_USERNAME: z
+    BOT_USERNAME: z
       .string()
       .min(1)
-      .regex(/^[A-Za-z0-9_]+$/, "NEXT_PUBLIC_BOT_USERNAME must not include the leading @"),
+      .regex(/^[A-Za-z0-9_]+$/, "BOT_USERNAME must not include the leading @"),
+    APP_URL: z
+      .url("APP_URL must be an absolute URL")
+      .transform((value) => value.replace(/\/$/, ""))
+      .refine(
+        (value) => process.env.NODE_ENV !== "production" || value.startsWith("https://"),
+        "APP_URL must use https in production, Telegram rejects other Mini App URLs",
+      ),
+    CLOUDFLARE_TUNNEL_TOKEN: z.string().optional(),
   },
 
   env: process.env,

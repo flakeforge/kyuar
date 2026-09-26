@@ -66,7 +66,7 @@ To test inline mode and the Mini App you need a public HTTPS URL:
 
 ```sh
 just tunnel        # in a second terminal
-# put the tunnel URL in NEXT_PUBLIC_APP_URL, then:
+# put the tunnel URL in APP_URL, restart `just dev`, then:
 just webhook-set
 ```
 
@@ -80,7 +80,7 @@ These steps cannot be automated and have to be done once in
    `Paste a link to turn it into a QR code`.
 3. `/setinlinefeedback` set to `Enabled` if you later want usage statistics.
 4. Bot Settings → Configure Mini App → enable the Main Mini App and point it at
-   `NEXT_PUBLIC_APP_URL`. Share buttons open it with `t.me/<bot>?startapp=…`,
+   `APP_URL`. Share buttons open it with `t.me/<bot>?startapp=…`,
    which works in groups and channels where `web_app` buttons do not.
 
 ## Commands
@@ -114,9 +114,9 @@ just docker-build
 just docker-up
 ```
 
-`NEXT_PUBLIC_*` values are baked into the client bundle at build time and come
-from build args. Everything else is read from `.env` at runtime through
-`env_file`, so no secret ever enters an image layer.
+All configuration is read from `.env` at runtime through `env_file`. The image
+has no build args, so one image runs in any environment and no secret enters an
+image layer.
 
 Put a reverse proxy cache in front of `/api/qr`. The route already sends
 `Cache-Control: immutable`, so repeated codes never reach Node.

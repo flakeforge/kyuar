@@ -90,7 +90,10 @@ packages/shared  zod schemas, option codec, Telegram initData verification
   the client.
 - **Never trust `initData` from the client.** Verify the HMAC server-side on
   every request that touches user state.
-- **Next.js inlines `NEXT_PUBLIC_*` at build time.** Anything that must change
-  per deployment without a rebuild has to stay server-side.
+- **Next.js inlines `NEXT_PUBLIC_*` at build time.** kyuar has no client
+  variables. `APP_URL` and `BOT_USERNAME` are server-only so one Docker image
+  runs anywhere. Pass values to the client as props.
+- **`web_app` buttons only work in private chats.** Anything that can land in a
+  group or channel links to `t.me/<bot>?startapp=<base64url>` instead.
 - **Do not adapt the UI to Telegram `themeParams`.** kyuar has its own color
   system. Only the header color is synced.

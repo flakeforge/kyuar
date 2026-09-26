@@ -1,4 +1,3 @@
-import env from "@kyuar/env";
 import { decodeStartParam } from "@kyuar/shared";
 
 import { Editor } from "~/components/editor";
@@ -15,5 +14,5 @@ export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams;
   const initialData = first(params.data) ?? decodeStartParam(first(params.tgWebAppStartParam));
 
-  return <Editor appUrl={env.NEXT_PUBLIC_APP_URL} initialData={initialData ?? ""} />;
+  return <Editor initialData={initialData ?? ""} />;
 }

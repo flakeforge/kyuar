@@ -14,11 +14,10 @@ const FINDER_CYCLE = ["ring", "circle", "rounded", "square"] as const;
 const MODULE_CYCLE = ["fluid", "dot", "rounded", "square"] as const;
 
 interface EditorProps {
-  appUrl: string;
   initialData: string;
 }
 
-export function Editor({ appUrl, initialData }: EditorProps) {
+export function Editor({ initialData }: EditorProps) {
   const { app, setAccent } = useTelegram();
 
   const [value, setValue] = useState(initialData);
@@ -72,7 +71,7 @@ export function Editor({ appUrl, initialData }: EditorProps) {
 
   const download = useCallback(() => {
     const request = qrRequestSchema.parse({ ...options, format: "png" });
-    const url = buildQrUrl(appUrl, request);
+    const url = buildQrUrl(window.location.origin, request);
     const webApp = getWebApp();
 
     if (webApp?.downloadFile) {
@@ -81,13 +80,13 @@ export function Editor({ appUrl, initialData }: EditorProps) {
       window.open(url, "_blank", "noopener,noreferrer");
     }
     haptic("success");
-  }, [appUrl, options]);
+  }, [options]);
 
   const share = useCallback(async () => {
     const webApp = getWebApp();
     if (!webApp?.initData || !webApp.shareMessage) {
       window.open(
-        buildQrUrl(appUrl, qrRequestSchema.parse({ ...options, format: "png" })),
+        buildQrUrl(window.location.origin, qrRequestSchema.parse({ ...options, format: "png" })),
         "_blank",
         "noopener,noreferrer",
       );
@@ -115,7 +114,7 @@ export function Editor({ appUrl, initialData }: EditorProps) {
     } finally {
       setIsSharing(false);
     }
-  }, [appUrl, options]);
+  }, [options]);
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-4 px-4 pt-4 pb-32">

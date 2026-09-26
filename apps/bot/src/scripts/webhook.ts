@@ -4,12 +4,7 @@ import { APP_URL, getBot } from "../index";
 
 type Action = "set" | "delete" | "info";
 
-const ALLOWED_UPDATES = [
-  "message",
-  "inline_query",
-  "chosen_inline_result",
-  "callback_query",
-] as const;
+const ALLOWED_UPDATES = ["message", "inline_query"] as const;
 
 async function main() {
   const action = (process.argv[2] ?? "info") as Action;

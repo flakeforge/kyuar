@@ -26,8 +26,9 @@ this project's context.
 
 ### Language
 
-All code, identifiers, documentation, commit messages and UI copy are in
-English. Write simply. Short sentences, plain words, no marketing tone.
+All code, identifiers, documentation and commit messages are in English. UI
+copy is written in English first, then translated to Uzbek and Russian. Write
+simply. Short sentences, plain words, no marketing tone.
 
 ### Comments
 
@@ -47,9 +48,11 @@ After changing code:
 ```sh
 just fix     # oxlint --fix, then oxfmt
 just check   # oxlint --deny-warnings + tsc --noEmit + react-doctor
+just test    # vitest
 ```
 
-Both must pass before the work is considered done.
+All three must pass before the work is considered done. Bug fixes come with a
+regression test when the code is testable.
 
 ### Commands
 
@@ -60,6 +63,10 @@ scripts when a recipe exists.
 
 Never commit, push, or rewrite history unless explicitly asked. Never touch
 `.env`.
+
+Commit messages follow Conventional Commits and are checked by commitlint in a
+lefthook `commit-msg` hook. Keep the body short or leave it out. Do not add
+`Co-authored-by` trailers.
 
 ## Layout
 

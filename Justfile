@@ -46,10 +46,11 @@ env:
         echo "  linked $link -> ${prefix}.env"
     done
 
-[doc('Install workspace dependencies')]
+[doc('Install workspace dependencies and git hooks')]
 [group('setup')]
 install:
     pnpm install
+    pnpm exec lefthook install
 
 [doc('Print a random secret suitable for BOT_WEBHOOK_SECRET')]
 [group('setup')]
@@ -121,6 +122,21 @@ typecheck:
 [group('quality')]
 doctor:
     pnpm exec react-doctor
+
+[doc('Run unit tests once')]
+[group('quality')]
+test *args:
+    pnpm exec vitest run {{ args }}
+
+[doc('Run unit tests in watch mode')]
+[group('quality')]
+test-watch *args:
+    pnpm exec vitest {{ args }}
+
+[doc('Find unused files, exports and dependencies')]
+[group('quality')]
+knip:
+    pnpm exec knip
 
 [doc('Production build of the web app')]
 [group('build')]

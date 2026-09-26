@@ -5,5 +5,4 @@ export {
   type FinderInnerShape,
   type FinderOuterShape,
 } from "./finders";
-export { createPath, PathBuilder, type CornerRadii, type Point } from "./path";
-export type * from "./types";
+export type { DotFigure, FinderFigure } from "./types";

@@ -49,7 +49,7 @@ After changing code:
 
 ```sh
 just fix     # oxlint --fix, then oxfmt
-just check   # oxlint --deny-warnings + tsc --noEmit + react-doctor
+just check   # oxlint, oxfmt --check, tsc, react-doctor, knip
 just test    # vitest
 ```
 

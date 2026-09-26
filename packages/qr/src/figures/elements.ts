@@ -9,7 +9,7 @@ import type { FigureBox } from "./types";
 
 export type Element = (path: PathBuilder, box: FigureBox) => PathBuilder;
 
-export type BlobCorner = "round" | "out" | "square";
+type BlobCorner = "round" | "out" | "square";
 
 export interface BlobCorners {
   tl: BlobCorner;

@@ -2,7 +2,7 @@ import env from "@kyuar/env";
 import { InitDataError, verifyInitData, type InitDataResult } from "@kyuar/shared/server";
 import { NextResponse } from "next/server";
 
-export const INIT_DATA_HEADER = "x-telegram-init-data";
+const INIT_DATA_HEADER = "x-telegram-init-data";
 
 /**
  * Verifies the Telegram `initData` header. Returns the verified data, or a

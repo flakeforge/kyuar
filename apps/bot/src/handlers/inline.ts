@@ -1,6 +1,6 @@
 import { THEMES } from "@kyuar/qr";
 import { InlineKeyboard } from "grammy";
-import type { Bot, InlineQueryResultBuilder } from "grammy";
+import type { Bot } from "grammy";
 
 import { defaultRequest, imageUrl, miniAppUrl, startAppUrl } from "../config";
 import { botMessages } from "../i18n";
@@ -53,5 +53,3 @@ export function registerInline(bot: Bot) {
     });
   });
 }
-
-export type { InlineQueryResultBuilder };

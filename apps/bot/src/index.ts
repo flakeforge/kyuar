@@ -29,6 +29,5 @@ export function getBot(): Bot {
   return instance;
 }
 
-export { registerCommands, registerInline };
 export { botMessages } from "./i18n";
 export { APP_URL, BOT_USERNAME, defaultRequest, imageUrl, miniAppUrl, startAppUrl } from "./config";

@@ -101,7 +101,7 @@ fix:
 [doc('Everything that must pass before work is done')]
 [group('quality')]
 [parallel]
-check: lint format-check typecheck doctor
+check: lint format-check typecheck doctor knip
 
 [doc('Lint with oxlint, warnings are errors')]
 [group('quality')]

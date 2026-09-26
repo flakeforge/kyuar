@@ -1,7 +1,7 @@
 import { Resvg } from "@resvg/resvg-js";
 import sharp from "sharp";
 
-export const RASTER_WIDTH = 1024;
+const RASTER_WIDTH = 1024;
 
 export function toPng(svg: string): Buffer {
   return new Resvg(svg, {

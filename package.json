@@ -25,7 +25,6 @@
     "oxfmt": "^0.68.0",
     "oxlint": "^1.83.0",
     "react-doctor": "^0.9.14",
-    "tsx": "^4.21.1",
     "typescript": "^5.9.3",
     "vitest": "^5.0.2"
   },

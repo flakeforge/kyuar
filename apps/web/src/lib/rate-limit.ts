@@ -4,7 +4,7 @@ import { getRedis } from "./redis";
 
 const WINDOW_SECONDS = 60;
 
-export function clientIp(request: Request): string {
+function clientIp(request: Request): string {
   const raw = request.headers.get(env.CLIENT_IP_HEADER) ?? "";
   return raw.split(",")[0]?.trim() || "unknown";
 }

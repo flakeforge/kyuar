@@ -11,7 +11,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.8.0",
     "@kyuar/bot": "workspace:*",
     "@kyuar/env": "workspace:*",
     "@kyuar/qr": "workspace:*",
@@ -25,15 +24,12 @@
     "next": "^16.3.5",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "sharp": "^0.35.4",
-    "zod": "^4.6.5"
+    "sharp": "^0.35.4"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^24.10.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3"
   }
 }

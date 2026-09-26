@@ -9,7 +9,7 @@ export interface DotFigureArgs extends FigureBox {
   random: () => number;
 }
 
-export interface FinderFigureArgs extends FigureBox {
+interface FinderFigureArgs extends FigureBox {
   rotation: number;
 }
 

@@ -32,9 +32,6 @@ importers:
       react-doctor:
         specifier: ^0.9.14
         version: 0.9.14(@opentelemetry/core@2.11.0(@opentelemetry/api@1.9.1))(eslint@10.11.0(jiti@2.7.0))(react@19.3.0)
-      tsx:
-        specifier: ^4.21.1
-        version: 4.23.13
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -69,9 +66,6 @@ importers:
 
   apps/web:
     dependencies:
-      '@base-ui/react':
-        specifier: ^1.8.0
-        version: 1.8.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@kyuar/bot':
         specifier: workspace:*
         version: link:../bot
@@ -114,13 +108,7 @@ importers:
       sharp:
         specifier: ^0.35.4
         version: 0.35.4(@types/node@24.13.6)
-      zod:
-        specifier: ^4.6.5
-        version: 4.6.5
     devDependencies:
-      '@tailwindcss/postcss':
-        specifier: ^4.3.3
-        version: 4.3.3
       '@types/node':
         specifier: ^24.10.1
         version: 24.13.6
@@ -130,9 +118,6 @@ importers:
       '@types/react-dom':
         specifier: ^19.3.0
         version: 19.3.0(@types/react@19.3.0)
-      tailwindcss:
-        specifier: ^4.3.3
-        version: 4.3.3
       typescript:
         specifier: ^5.9.3
         version: 5.9.3

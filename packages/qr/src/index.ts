@@ -1,4 +1,4 @@
-export { renderQr, DEFAULT_MODULE_SIZE } from "./render";
+export { renderQr, canEncode, DEFAULT_MODULE_SIZE } from "./render";
 export type { RenderInput, RenderedQr } from "./render";
 export {
   DEFAULT_STYLE,

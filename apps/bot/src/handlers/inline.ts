@@ -27,8 +27,9 @@ export function registerInline(bot: Bot) {
       return;
     }
 
-    const results = THEMES.slice(0, RESULT_LIMIT).map((theme) => {
+    const results = THEMES.slice(0, RESULT_LIMIT).flatMap((theme) => {
       const request = defaultRequest(input, theme);
+      if (!request) return [];
       const url = imageUrl(request);
 
       return {

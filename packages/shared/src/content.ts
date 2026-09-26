@@ -25,7 +25,7 @@ export function classifyContent(input: string): QrContent {
     return { kind: "email", label: value, value: `mailto:${value}` };
   }
 
-  if (/^\+?[\d\s()-]{7,20}$/.test(value)) {
+  if (/^\+\d[\d\s()-]{5,18}\d$/.test(value) && value.replaceAll(/\D/g, "").length <= 15) {
     return { kind: "phone", label: value, value: `tel:${value.replaceAll(/[\s()-]/g, "")}` };
   }
 

@@ -115,6 +115,26 @@ function scanWarnings(style: QrStyle): string[] {
 }
 
 /**
+ * Returns false when the data does not fit in a QR code with this style, so
+ * callers can explain the problem instead of failing later.
+ */
+export function canEncode(data: string, style: QrStyle = DEFAULT_STYLE): boolean {
+  try {
+    buildMatrix({
+      data,
+      ecc: style.ecc,
+      boostEcc: false,
+      minVersion: style.minVersion,
+      mask: style.mask,
+      logoRatio: style.logo.ratio,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Renders a QR code to a standalone SVG string. Every element — data modules,
  * finder rings and eyes, alignment and timing patterns, background — has its
  * own shape and paint. Output has no external references, so resvg can

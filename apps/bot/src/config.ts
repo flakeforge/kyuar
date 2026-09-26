@@ -1,5 +1,5 @@
 import env from "@kyuar/env";
-import { DEFAULT_STYLE, DEFAULT_THEME, withColors, type QrTheme } from "@kyuar/qr";
+import { canEncode, DEFAULT_STYLE, DEFAULT_THEME, withColors, type QrTheme } from "@kyuar/qr";
 import {
   buildQrUrl,
   classifyContent,
@@ -15,16 +15,22 @@ export const BOT_USERNAME = env.BOT_USERNAME;
 /**
  * Builds the default QR request for a piece of user input. Both the inline
  * handler and the private-chat handler go through this so a code generated in
- * a chat looks identical to one generated in the mini app.
+ * a chat looks identical to one generated in the mini app. Returns
+ * `undefined` when the input does not fit in one QR code.
  */
-export function defaultRequest(input: string, theme: QrTheme = DEFAULT_THEME): QrRequest {
+export function defaultRequest(
+  input: string,
+  theme: QrTheme = DEFAULT_THEME,
+): QrRequest | undefined {
   const content = classifyContent(input);
-
-  return qrRequestSchema.parse({
+  const parsed = qrRequestSchema.safeParse({
     data: content.value,
     format: "jpg",
     style: withColors(DEFAULT_STYLE, theme.foreground, theme.background),
   });
+
+  if (!parsed.success || !canEncode(parsed.data.data, parsed.data.style)) return undefined;
+  return parsed.data;
 }
 
 export function imageUrl(request: QrRequest): string {

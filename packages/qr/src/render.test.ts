@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { DOT_FIGURES, FINDER_INNER_FIGURES, FINDER_OUTER_FIGURES } from "./figures";
 import type { DotShape, FinderInnerShape, FinderOuterShape } from "./figures";
 import type { GrayImage } from "./halftone";
-import { renderQr } from "./render";
+import { canEncode, renderQr } from "./render";
 import { DEFAULT_STYLE, withColors, type QrStyle } from "./style";
 
 const DATA = "https://kyuar.app/?q=Salom дунё";
@@ -112,5 +112,12 @@ describe("renderQr output", () => {
   it("is deterministic", () => {
     const style = styled({ data: { ...INK.data, shape: "random-dot" } });
     expect(renderQr({ data: DATA, style }).svg).toBe(renderQr({ data: DATA, style }).svg);
+  });
+});
+
+describe("canEncode", () => {
+  it("rejects data over capacity", () => {
+    expect(canEncode("x".repeat(100))).toBe(true);
+    expect(canEncode("ж".repeat(2000))).toBe(false);
   });
 });

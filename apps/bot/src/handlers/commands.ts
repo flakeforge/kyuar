@@ -19,6 +19,8 @@ const HELP = [
   "3. Type @{username} followed by a link in any chat to share a code without leaving the conversation.",
 ].join("\n");
 
+const TOO_LONG = "That is too much text for one QR code. Try something shorter, like a link.";
+
 function startKeyboard(input?: string) {
   return new InlineKeyboard().webApp("Open editor", miniAppUrl(input));
 }
@@ -37,6 +39,10 @@ export function registerCommands(bot: Bot) {
     if (!input || input.startsWith("/")) return;
 
     const request = defaultRequest(input);
+    if (!request) {
+      await ctx.reply(TOO_LONG);
+      return;
+    }
 
     await ctx.replyWithPhoto(imageUrl(request), {
       caption: input.length > 900 ? undefined : input,

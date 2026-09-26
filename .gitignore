@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Tooling caches
+.oxlintcache
+.react-doctor/
+coverage/
+
+# Local scratch
+tmp/
+*.local
+
+# Agent tooling (skills restore from skills-lock.json)
+.agents/
+.codex/
+.hermes/
+.impeccable/
+.claude/*
+!.claude/settings.json

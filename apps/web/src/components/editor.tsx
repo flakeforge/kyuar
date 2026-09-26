@@ -1,0 +1,220 @@
+"use client";
+
+import { DEFAULT_THEME, THEMES, type QrTheme } from "@kyuar/qr";
+import { buildQrUrl, classifyContent, qrRequestSchema } from "@kyuar/shared";
+import { useCallback, useMemo, useState } from "react";
+
+import { ControlRow } from "~/components/control-row";
+import { QrCanvas } from "~/components/qr-canvas";
+import { ThemePicker } from "~/components/theme-picker";
+import { getWebApp, haptic } from "~/lib/telegram";
+import { useTelegram } from "~/lib/use-telegram";
+
+const FINDER_CYCLE = ["ring", "circle", "rounded", "square"] as const;
+const MODULE_CYCLE = ["fluid", "dot", "rounded", "square"] as const;
+
+interface EditorProps {
+  appUrl: string;
+  initialData: string;
+}
+
+export function Editor({ appUrl, initialData }: EditorProps) {
+  const { app, setAccent } = useTelegram();
+
+  const [value, setValue] = useState(initialData);
+  const [theme, setTheme] = useState<QrTheme>(DEFAULT_THEME);
+  const [styleIndex, setStyleIndex] = useState(0);
+  const [isSharing, setIsSharing] = useState(false);
+
+  const content = classifyContent(value || "kyuar.app");
+  const finderStyle = FINDER_CYCLE[styleIndex % FINDER_CYCLE.length] ?? "ring";
+  const moduleStyle = MODULE_CYCLE[styleIndex % MODULE_CYCLE.length] ?? "fluid";
+
+  const options = useMemo(
+    () => ({
+      data: content.value,
+      ecc: "M" as const,
+      moduleStyle,
+      finderStyle,
+      foreground: theme.foreground,
+      background: theme.background,
+      margin: 3,
+      logoRatio: 0,
+    }),
+    [content.value, moduleStyle, finderStyle, theme.foreground, theme.background],
+  );
+
+  const applyTheme = useCallback(
+    (next: QrTheme) => {
+      setTheme(next);
+      setAccent(next.background);
+      document.documentElement.style.setProperty("--accent", next.background);
+      document.documentElement.style.setProperty("--accent-ink", next.foreground);
+    },
+    [setAccent],
+  );
+
+  const selectTheme = useCallback(
+    (next: QrTheme) => {
+      applyTheme(next);
+      haptic("select");
+    },
+    [applyTheme],
+  );
+
+  const shuffle = useCallback(() => {
+    setStyleIndex((index) => index + 1);
+    const pool = THEMES.filter((item) => item.id !== theme.id);
+    const next = pool[Math.floor(Math.random() * pool.length)];
+    if (next) applyTheme(next);
+    haptic("impact");
+  }, [applyTheme, theme.id]);
+
+  const download = useCallback(() => {
+    const request = qrRequestSchema.parse({ ...options, format: "png" });
+    const url = buildQrUrl(appUrl, request);
+    const webApp = getWebApp();
+
+    if (webApp?.downloadFile) {
+      webApp.downloadFile({ url, file_name: "kyuar.png" });
+    } else {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+    haptic("success");
+  }, [appUrl, options]);
+
+  const share = useCallback(async () => {
+    const webApp = getWebApp();
+    if (!webApp?.initData || !webApp.shareMessage) {
+      window.open(
+        buildQrUrl(appUrl, qrRequestSchema.parse({ ...options, format: "png" })),
+        "_blank",
+        "noopener,noreferrer",
+      );
+      return;
+    }
+
+    setIsSharing(true);
+    try {
+      const response = await fetch("/api/share", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-telegram-init-data": webApp.initData,
+        },
+        body: JSON.stringify(options),
+      });
+
+      if (!response.ok) throw new Error("share failed");
+
+      const { id } = (await response.json()) as { id: string };
+      webApp.shareMessage(id);
+      haptic("success");
+    } catch {
+      haptic("impact");
+    } finally {
+      setIsSharing(false);
+    }
+  }, [appUrl, options]);
+
+  return (
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-4 px-4 pt-4 pb-32">
+      <QrCanvas options={options} />
+
+      <div className="surface-row flex items-center gap-3 px-5 py-4">
+        <input
+          value={value}
+          onChange={(event) => setValue(event.target.value)}
+          placeholder="kyuar.app"
+          aria-label="Content to encode"
+          className="min-w-0 flex-1 bg-transparent text-center font-medium outline-none placeholder:opacity-50"
+        />
+      </div>
+
+      <div className="flex flex-col gap-2.5">
+        <ThemePicker active={theme} onSelect={selectTheme} />
+
+        <ControlRow label="Style" onClick={() => setStyleIndex((index) => index + 1)}>
+          <span className="text-sm capitalize">{moduleStyle}</span>
+        </ControlRow>
+
+        <ControlRow label="Logo">
+          <span className="text-sm opacity-60">Soon</span>
+        </ControlRow>
+      </div>
+
+      <nav className="fixed inset-x-0 bottom-0 mx-auto flex w-full max-w-md items-center justify-center gap-3 px-4 pb-6">
+        <button
+          type="button"
+          onClick={download}
+          aria-label="Download"
+          className="ease-snap grid size-14 place-items-center rounded-full bg-white/90 shadow-lg shadow-black/10 backdrop-blur transition-transform duration-150 active:scale-90"
+        >
+          <DownloadIcon />
+        </button>
+
+        <button
+          type="button"
+          onClick={shuffle}
+          aria-label="Shuffle style"
+          className="ease-snap grid h-14 w-24 place-items-center rounded-full text-(--accent-ink) shadow-lg shadow-black/20 transition-transform duration-150 active:scale-90"
+          style={{ background: theme.background }}
+        >
+          <ShuffleIcon />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => void share()}
+          disabled={isSharing || !app}
+          aria-label="Share to Telegram"
+          className="ease-snap grid size-14 place-items-center rounded-full bg-white/90 shadow-lg shadow-black/10 backdrop-blur transition-transform duration-150 active:scale-90 disabled:opacity-50"
+        >
+          <ShareIcon />
+        </button>
+      </nav>
+    </main>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function ShuffleIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function ShareIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M12 16V4m0 0 4 4m-4-4L8 8M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}

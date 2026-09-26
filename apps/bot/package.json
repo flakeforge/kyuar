@@ -1,0 +1,25 @@
+{
+  "name": "@kyuar/bot",
+  "version": "0.1.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "tsx watch src/dev.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@kyuar/env": "workspace:*",
+    "@kyuar/qr": "workspace:*",
+    "@kyuar/shared": "workspace:*",
+    "grammy": "^1.46.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "tsx": "^4.21.1",
+    "typescript": "^5.9.3"
+  }
+}

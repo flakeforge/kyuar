@@ -30,4 +30,4 @@ export function getBot(): Bot {
 }
 
 export { registerCommands, registerInline };
-export { APP_URL, BOT_USERNAME, defaultRequest, imageUrl, miniAppUrl } from "./config";
+export { APP_URL, BOT_USERNAME, defaultRequest, imageUrl, miniAppUrl, startAppUrl } from "./config";

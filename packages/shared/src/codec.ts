@@ -25,7 +25,8 @@ export function encodeQrQuery(request: QrRequest): string {
   for (const [key, short] of Object.entries(SHORT_KEYS) as [keyof QrRequest, string][]) {
     const value = request[key];
     if (value === undefined) continue;
-    params.set(short, typeof value === "string" ? value.replace(/^#/, "") : String(value));
+    const isColor = key === "foreground" || key === "background";
+    params.set(short, isColor ? String(value).replace(/^#/, "") : String(value));
   }
 
   return params.toString();

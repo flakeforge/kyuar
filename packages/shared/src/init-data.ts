@@ -1,6 +1,7 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
-
+import { validate } from "@tma.js/init-data-node";
 import * as z from "zod";
+
+const MAX_CLOCK_SKEW_SECONDS = 60;
 
 const telegramUserSchema = z.object({
   id: z.number().int(),
@@ -20,6 +21,7 @@ export interface InitDataResult {
   queryId?: string;
   chatType?: string;
   chatInstance?: string;
+  startParam?: string;
 }
 
 export class InitDataError extends Error {
@@ -29,20 +31,25 @@ export class InitDataError extends Error {
   }
 }
 
-function safeEqual(a: string, b: string) {
-  const left = Buffer.from(a, "hex");
-  const right = Buffer.from(b, "hex");
-  if (left.length !== right.length || left.length === 0) return false;
-  return timingSafeEqual(left, right);
+function parseUser(raw: string | null): TelegramUser {
+  if (!raw) throw new InitDataError("initData has no user");
+
+  let json: unknown;
+  try {
+    json = JSON.parse(raw);
+  } catch {
+    throw new InitDataError("initData user payload is malformed");
+  }
+
+  const parsed = telegramUserSchema.safeParse(json);
+  if (!parsed.success) throw new InitDataError("initData user payload is malformed");
+  return parsed.data;
 }
 
 /**
- * Verifies Telegram Mini App `initData` against the bot token, following
- * https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app
- *
- * Never trust any field from the client without running this first: the raw
- * string is attacker-controlled and the signature is the only thing binding it
- * to a real Telegram user.
+ * Verifies Telegram Mini App `initData` against the bot token and returns the
+ * signed fields. Throws `InitDataError` for a missing or bad signature, an
+ * expired or future `auth_date`, or a malformed user.
  */
 export function verifyInitData(
   initData: string,
@@ -52,46 +59,28 @@ export function verifyInitData(
   if (!initData) throw new InitDataError("initData is empty");
 
   const params = new URLSearchParams(initData);
-  const hash = params.get("hash");
-  if (!hash) throw new InitDataError("initData has no hash");
-
-  params.delete("hash");
-  params.delete("signature");
-
-  const checkString = [...params.entries()]
-    .toSorted(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-    .map(([key, value]) => `${key}=${value}`)
-    .join("\n");
-
-  const secretKey = createHmac("sha256", "WebAppData").update(botToken).digest();
-  const computed = createHmac("sha256", secretKey).update(checkString).digest("hex");
-
-  if (!safeEqual(computed, hash)) {
-    throw new InitDataError("initData signature does not match");
+  for (const key of new Set(params.keys())) {
+    if (params.getAll(key).length > 1) throw new InitDataError(`initData repeats "${key}"`);
   }
 
-  const authDateRaw = params.get("auth_date");
-  if (!authDateRaw) throw new InitDataError("initData has no auth_date");
-
-  const authDate = new Date(Number(authDateRaw) * 1000);
-  if (Number.isNaN(authDate.getTime())) throw new InitDataError("initData auth_date is invalid");
-
-  const ageSeconds = (Date.now() - authDate.getTime()) / 1000;
-  if (maxAgeSeconds > 0 && ageSeconds > maxAgeSeconds) {
-    throw new InitDataError("initData has expired");
+  try {
+    validate(params, botToken, { expiresIn: maxAgeSeconds });
+  } catch (error: unknown) {
+    const reason = error instanceof Error ? error.message : "initData is invalid";
+    throw new InitDataError(reason);
   }
 
-  const userRaw = params.get("user");
-  if (!userRaw) throw new InitDataError("initData has no user");
-
-  const parsed = telegramUserSchema.safeParse(JSON.parse(userRaw));
-  if (!parsed.success) throw new InitDataError("initData user payload is malformed");
+  const authDate = new Date(Number(params.get("auth_date")) * 1000);
+  if (authDate.getTime() - Date.now() > MAX_CLOCK_SKEW_SECONDS * 1000) {
+    throw new InitDataError("initData auth_date is in the future");
+  }
 
   return {
-    user: parsed.data,
+    user: parseUser(params.get("user")),
     authDate,
     queryId: params.get("query_id") ?? undefined,
     chatType: params.get("chat_type") ?? undefined,
     chatInstance: params.get("chat_instance") ?? undefined,
+    startParam: params.get("start_param") ?? undefined,
   };
 }

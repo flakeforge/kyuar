@@ -79,7 +79,9 @@ These steps cannot be automated and have to be done once in
 2. `/setinline` to enable inline mode, with a placeholder such as
    `Paste a link to turn it into a QR code`.
 3. `/setinlinefeedback` set to `Enabled` if you later want usage statistics.
-4. `/newapp` to register the Mini App and point it at `NEXT_PUBLIC_APP_URL`.
+4. Bot Settings → Configure Mini App → enable the Main Mini App and point it at
+   `NEXT_PUBLIC_APP_URL`. Share buttons open it with `t.me/<bot>?startapp=…`,
+   which works in groups and channels where `web_app` buttons do not.
 
 ## Commands
 

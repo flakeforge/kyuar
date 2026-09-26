@@ -2,7 +2,7 @@ import { THEMES } from "@kyuar/qr";
 import { InlineKeyboard } from "grammy";
 import type { Bot, InlineQueryResultBuilder } from "grammy";
 
-import { defaultRequest, imageUrl, miniAppUrl } from "../config";
+import { defaultRequest, imageUrl, miniAppUrl, startAppUrl } from "../config";
 
 const CACHE_SECONDS = 60;
 const RESULT_LIMIT = 8;
@@ -43,7 +43,7 @@ export function registerInline(bot: Bot) {
         photo_height: 512,
         title: theme.name,
         caption: input,
-        reply_markup: new InlineKeyboard().webApp("Edit in kyuar", miniAppUrl(input)),
+        reply_markup: new InlineKeyboard().url("Edit in kyuar", startAppUrl(input)),
       };
     });
 

@@ -1,4 +1,4 @@
-import { defaultRequest, getBot, imageUrl, miniAppUrl } from "@kyuar/bot";
+import { defaultRequest, getBot, imageUrl, startAppUrl } from "@kyuar/bot";
 import env from "@kyuar/env";
 import { shareRequestSchema } from "@kyuar/shared";
 import { InitDataError, verifyInitData } from "@kyuar/shared/server";
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
         title: title ?? "QR code",
         caption: options.data.slice(0, 900),
         reply_markup: {
-          inline_keyboard: [[{ text: "Make your own", web_app: { url: miniAppUrl() } }]],
+          inline_keyboard: [[{ text: "Make your own", url: startAppUrl() }]],
         },
       },
       { allow_user_chats: true, allow_group_chats: true, allow_channel_chats: true },

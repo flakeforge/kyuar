@@ -17,3 +17,5 @@ export function decodeStartParam(param: string | null | undefined): string | und
   if (!param || param.length > MAX_START_PARAM_LENGTH) return undefined;
   return fromBase64Url(param);
 }
+
+export const SCAN_START_PARAM = "scan";

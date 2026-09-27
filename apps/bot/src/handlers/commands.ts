@@ -18,9 +18,12 @@ export function registerCommands(bot: Bot) {
     await ctx.reply(botMessages(ctx.from?.language_code).help(ctx.me.username));
   });
 
-  bot.on("message:text", async (ctx) => {
+  bot.chatType("private").on("message:text", async (ctx, next) => {
     const input = ctx.message.text.trim();
-    if (!input || input.startsWith("/")) return;
+    if (!input || input.startsWith("/")) {
+      await next();
+      return;
+    }
 
     const t = botMessages(ctx.from?.language_code);
     const request = defaultRequest(input);

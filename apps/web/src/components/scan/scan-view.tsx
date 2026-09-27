@@ -3,6 +3,7 @@
 import { parseScanned } from "@kyuar/shared";
 import { Button } from "@kyuar/ui/components/button";
 import { ChevronLeftIcon, ScanLineIcon } from "lucide-react";
+import { useEffect } from "react";
 
 import { useMessages } from "~/i18n";
 
@@ -16,7 +17,11 @@ interface ScanViewProps {
 
 export function ScanView({ scan, onRestyle }: ScanViewProps) {
   const t = useMessages();
-  const { result, setResult, history, clear } = scan;
+  const { result, setResult, history, clear, refreshHistory } = scan;
+
+  useEffect(() => {
+    void refreshHistory();
+  }, [refreshHistory]);
 
   return (
     <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-5 px-4 pt-[calc(var(--tg-viewport-safe-area-inset-top,0px)+var(--tg-viewport-content-safe-area-inset-top,0px)+1rem)] pb-52">

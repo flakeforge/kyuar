@@ -1,10 +1,8 @@
 import env from "@kyuar/env";
 
-import { APP_URL, getBot } from "../index";
+import { ALLOWED_UPDATES, APP_URL, getBot, registerCommandList } from "../index";
 
 type Action = "set" | "delete" | "info";
-
-const ALLOWED_UPDATES = ["message", "inline_query"] as const;
 
 async function main() {
   const action = (process.argv[2] ?? "info") as Action;
@@ -17,6 +15,7 @@ async function main() {
       allowed_updates: ALLOWED_UPDATES,
       drop_pending_updates: true,
     });
+    await registerCommandList(bot);
     console.info(`Webhook set to ${url}`);
     return;
   }

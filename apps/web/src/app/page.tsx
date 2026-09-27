@@ -1,9 +1,13 @@
-import { decodeStartParam } from "@kyuar/shared";
+import { decodeStartParam, SCAN_START_PARAM } from "@kyuar/shared";
 
 import { Editor } from "~/components/editor/editor";
 
 interface PageProps {
-  searchParams: Promise<{ data?: string | string[]; tgWebAppStartParam?: string | string[] }>;
+  searchParams: Promise<{
+    data?: string | string[];
+    mode?: string | string[];
+    tgWebAppStartParam?: string | string[];
+  }>;
 }
 
 function first(value: string | string[] | undefined) {
@@ -12,7 +16,9 @@ function first(value: string | string[] | undefined) {
 
 export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams;
-  const initialData = first(params.data) ?? decodeStartParam(first(params.tgWebAppStartParam));
+  const startParam = first(params.tgWebAppStartParam);
+  const scanFirst = first(params.mode) === "scan" || startParam === SCAN_START_PARAM;
+  const initialData = first(params.data) ?? (scanFirst ? undefined : decodeStartParam(startParam));
 
-  return <Editor initialData={initialData ?? ""} />;
+  return <Editor initialData={initialData ?? ""} initialMode={scanFirst ? "scan" : "create"} />;
 }

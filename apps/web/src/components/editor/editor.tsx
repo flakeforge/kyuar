@@ -11,7 +11,6 @@ import { ScanActions } from "~/components/scan/scan-actions";
 import { ScanView } from "~/components/scan/scan-view";
 import { useScan } from "~/components/scan/use-scan";
 import { useMessages } from "~/i18n";
-import { cameraAvailable } from "~/lib/scanner";
 import { setHeaderColor } from "~/lib/telegram";
 import { useScanCheck } from "~/lib/use-scan-check";
 import { useTelegram } from "~/lib/use-telegram";
@@ -30,10 +29,10 @@ function pageBackground(theme: string) {
   return oklchToHex({ l: l * PAGE_TINT + (1 - PAGE_TINT), c: c * PAGE_TINT, h });
 }
 
-export function Editor({ initialData }: { initialData: string }) {
+export function Editor({ initialData, initialMode }: { initialData: string; initialMode: Mode }) {
   const t = useMessages();
   const isTelegram = useTelegram();
-  const [mode, setMode] = useState<Mode>("create");
+  const [mode, setMode] = useState<Mode>(initialMode);
   const scan = useScan();
   const editor = useEditor(initialData);
   const rendered = useRendered(editor);
@@ -121,15 +120,7 @@ export function Editor({ initialData }: { initialData: string }) {
         />
       )}
 
-      <Dock
-        mode={mode}
-        onModeChange={(next) => {
-          setMode(next);
-          if (next !== "scan") return;
-          void scan.refreshHistory();
-          if (cameraAvailable()) void scan.fromCamera();
-        }}
-      >
+      <Dock mode={mode} onModeChange={setMode}>
         {mode === "create" ? (
           <CreateActions
             editor={editor}

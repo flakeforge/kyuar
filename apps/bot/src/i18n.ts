@@ -15,6 +15,10 @@ interface BotMessages {
   scanWarnings: Record<LinkWarning, string>;
   openLink: string;
   styleIt: string;
+  scanHelpPrivate: string;
+  scanHelpGroup: (username: string) => string;
+  openScanner: string;
+  commands: { start: string; scan: string; help: string };
 }
 
 const MESSAGES: Record<Locale, BotMessages> = {
@@ -33,6 +37,7 @@ const MESSAGES: Record<Locale, BotMessages> = {
         "1. Send text here and get a QR code back.",
         "2. Tap Open editor for colors, styles and downloads.",
         `3. Type @${username} followed by a link in any chat to share a code without leaving the conversation.`,
+        "4. Send me a photo of a QR code to read it. In groups, reply to a photo with /scan.",
       ].join("\n"),
     tooLong: "That is too much text for one QR code. Try something shorter, like a link.",
     openEditor: "Open editor",
@@ -62,6 +67,16 @@ const MESSAGES: Record<Locale, BotMessages> = {
     },
     openLink: "Open link",
     styleIt: "Style this code",
+    scanHelpPrivate:
+      "Send me a photo or a screenshot of a QR code and I will read it. Or open the scanner.",
+    scanHelpGroup: (username) =>
+      `Reply to a photo with @${username} or /scan, or add @${username} to the photo caption, and I will read the QR code in it.`,
+    openScanner: "Open scanner",
+    commands: {
+      start: "Make a QR code",
+      scan: "Read a QR code from a photo",
+      help: "How to use kyuar",
+    },
   },
   uz: {
     welcome: [
@@ -78,6 +93,7 @@ const MESSAGES: Record<Locale, BotMessages> = {
         "1. Shu yerga matn yuboring va QR kod oling.",
         "2. Rang, uslub va yuklab olish uchun «Editorni ochish» tugmasini bosing.",
         `3. Istalgan chatda @${username} va havolani yozing, kod suhbatdan chiqmasdan yuboriladi.`,
+        "4. QR kod rasmini yuboring, men uni oʻqiyman. Guruhlarda rasmga /scan deb javob yozing.",
       ].join("\n"),
     tooLong: "Bitta QR kod uchun matn juda uzun. Qisqaroq narsa yuboring, masalan havola.",
     openEditor: "Editorni ochish",
@@ -107,6 +123,16 @@ const MESSAGES: Record<Locale, BotMessages> = {
     },
     openLink: "Havolani ochish",
     styleIt: "Shu kodni bezash",
+    scanHelpPrivate:
+      "Menga QR kod rasmi yoki skrinshotini yuboring, men uni oʻqib beraman. Yoki skanerni oching.",
+    scanHelpGroup: (username) =>
+      `Rasmga @${username} yoki /scan deb javob yozing yoki rasm izohiga @${username} qoʻshing, men undagi QR kodni oʻqib beraman.`,
+    openScanner: "Skanerni ochish",
+    commands: {
+      start: "QR kod yaratish",
+      scan: "Rasmdagi QR kodni oʻqish",
+      help: "kyuarʼdan foydalanish",
+    },
   },
   ru: {
     welcome: [
@@ -123,6 +149,7 @@ const MESSAGES: Record<Locale, BotMessages> = {
         "1. Отправьте сюда текст и получите QR-код.",
         "2. Нажмите «Открыть редактор» для цветов, стилей и скачивания.",
         `3. Напишите @${username} и ссылку в любом чате, чтобы отправить код, не выходя из разговора.`,
+        "4. Пришлите фото QR-кода, и я его прочитаю. В группах ответьте на фото командой /scan.",
       ].join("\n"),
     tooLong:
       "Слишком много текста для одного QR-кода. Пришлите что-нибудь короче, например ссылку.",
@@ -153,6 +180,15 @@ const MESSAGES: Record<Locale, BotMessages> = {
     },
     openLink: "Открыть ссылку",
     styleIt: "Оформить этот код",
+    scanHelpPrivate: "Пришлите фото или скриншот QR-кода, и я его прочитаю. Или откройте сканер.",
+    scanHelpGroup: (username) =>
+      `Ответьте на фото сообщением @${username} или /scan либо добавьте @${username} в подпись к фото, и я прочитаю QR-код.`,
+    openScanner: "Открыть сканер",
+    commands: {
+      start: "Создать QR-код",
+      scan: "Прочитать QR-код с фото",
+      help: "Как пользоваться kyuar",
+    },
   },
 };
 

@@ -4,6 +4,7 @@ import {
   buildQrUrl,
   classifyContent,
   encodeStartParam,
+  SCAN_START_PARAM,
   qrRequestSchema,
   type QrRequest,
 } from "@kyuar/shared";
@@ -53,3 +54,9 @@ export function startAppUrl(input?: string): string {
   const base = `https://t.me/${BOT_USERNAME}`;
   return param ? `${base}?startapp=${param}` : `${base}?startapp`;
 }
+
+export const scannerMiniAppUrl = `${APP_URL}?mode=scan`;
+
+export const scannerStartAppUrl = `https://t.me/${BOT_USERNAME}?startapp=${SCAN_START_PARAM}`;
+
+export const ALLOWED_UPDATES = ["message", "inline_query", "guest_message"] as const;

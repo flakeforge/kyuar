@@ -1,4 +1,4 @@
-import { getBot } from "./index";
+import { ALLOWED_UPDATES, getBot, registerCommandList } from "./index";
 
 const bot = getBot();
 
@@ -11,8 +11,10 @@ async function main() {
   }
 
   await bot.api.deleteWebhook({ drop_pending_updates: false });
+  await registerCommandList(bot);
 
   await bot.start({
+    allowed_updates: ALLOWED_UPDATES,
     onStart: (info) => {
       console.info(`@${info.username} is polling for updates`);
     },

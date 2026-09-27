@@ -88,8 +88,7 @@ function ColorArea({
       }}
       onKeyDown={onKeyDown}
       onKeyUp={onChangeEnd}
-      onPointerUp={onChangeEnd}
-      onPointerCancel={onChangeEnd}
+      onLostPointerCapture={onChangeEnd}
     >
       <span
         aria-hidden="true"

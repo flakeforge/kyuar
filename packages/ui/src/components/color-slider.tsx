@@ -35,7 +35,7 @@ function ColorSlider({
       thumbAlignment="edge"
       {...props}
     >
-      <SliderPrimitive.Control className="relative flex h-8 w-full touch-none items-center select-none">
+      <SliderPrimitive.Control className="relative flex h-11 w-full touch-none items-center select-none">
         <SliderPrimitive.Track
           className="relative h-3 w-full rounded-full shadow-[inset_0_0_0_1px_rgb(0_0_0/0.08)]"
           style={{ background: track }}

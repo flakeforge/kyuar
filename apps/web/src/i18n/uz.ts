@@ -54,6 +54,8 @@ export const uz: Messages = {
     more: "Koʻproq shakllar",
 
     fewerShapes: "Kamroq shakllar",
+
+    needsBorder: "Chekka kerak",
   },
   color: {
     themes: "Mavzular",

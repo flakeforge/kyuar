@@ -12,6 +12,7 @@ import type { ReactNode } from "react";
 
 interface SheetRowProps {
   label: string;
+  disabled?: boolean;
   value?: string;
   className?: string;
   preview: ReactNode;
@@ -22,14 +23,15 @@ interface SheetRowProps {
  * One control row. Tapping it opens a bottom sheet with the options, so only
  * one group of controls is on screen at a time.
  */
-export function SheetRow({ label, value, preview, className, children }: SheetRowProps) {
+export function SheetRow({ label, value, preview, disabled, className, children }: SheetRowProps) {
   return (
     <Drawer>
       <DrawerTrigger
+        disabled={disabled}
         aria-label={value ? `${label}: ${value}` : label}
         className={cn(
           className,
-          "bg-card text-card-foreground ease-snap focus-visible:ring-ring/50 flex h-14 w-full items-center justify-between rounded-(--radius) px-4 text-left text-base font-medium transition-transform duration-150 outline-none focus-visible:ring-3 active:scale-[0.985]",
+          "bg-card text-card-foreground ease-snap focus-visible:ring-ring/50 flex h-14 w-full items-center justify-between rounded-(--radius) px-4 text-left text-base font-medium transition-transform duration-150 outline-none focus-visible:ring-3 active:scale-[0.985] disabled:opacity-60",
         )}
       >
         <span className="shrink-0">{label}</span>

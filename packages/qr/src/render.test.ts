@@ -121,3 +121,24 @@ describe("canEncode", () => {
     expect(canEncode("ж".repeat(2000))).toBe(false);
   });
 });
+
+describe("background corners", () => {
+  const radiusOf = (margin: number, backgroundRadius: number) => {
+    const svg = renderQr({
+      data: DATA,
+      style: styled({ margin, backgroundRadius }),
+      moduleSize: 10,
+    }).svg;
+    return Number(/<rect[^>]* rx="([\d.]+)"/.exec(svg)?.[1]);
+  };
+
+  it("never rounds into the code", () => {
+    expect(radiusOf(0, 1)).toBe(0);
+    expect(radiusOf(2, 1)).toBe(20);
+  });
+
+  it("keeps round and extra round distinct", () => {
+    expect(radiusOf(2, 0.5)).toBeLessThan(radiusOf(2, 1));
+    expect(radiusOf(4, 0.5)).toBe(20);
+  });
+});

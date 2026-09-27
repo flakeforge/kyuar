@@ -184,7 +184,8 @@ export function Controls({
       <SheetRow
         className={itemClassName}
         label={t.rows.corners}
-        value={radiusLabel}
+        value={style.margin === 0 ? t.options.needsBorder : radiusLabel}
+        disabled={style.margin === 0}
         preview={<CornerPreview radius={style.backgroundRadius} />}
       >
         <ChoiceList

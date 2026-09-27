@@ -48,6 +48,8 @@ export const en = {
     more: "More shapes",
 
     fewerShapes: "Fewer shapes",
+
+    needsBorder: "Needs a border",
   },
   color: {
     themes: "Themes",

@@ -53,6 +53,8 @@ export const ru: Messages = {
     more: "Больше форм",
 
     fewerShapes: "Меньше форм",
+
+    needsBorder: "Нужны поля",
   },
   color: {
     themes: "Темы",

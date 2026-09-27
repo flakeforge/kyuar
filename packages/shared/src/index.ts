@@ -12,6 +12,7 @@ export {
   halftoneRequestSchema,
   imageDataUrlSchema,
   MAX_QR_DATA_LENGTH,
+  RASTER_SIZES,
   MAX_IMAGE_DATA_URL_LENGTH,
 } from "./schema";
 export type { HalftoneRequest, QrFormat, QrRequest, RenderRequest, ShareRequest } from "./schema";

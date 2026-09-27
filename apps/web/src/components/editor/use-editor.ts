@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  canEncode,
   hexToOklch,
   DEFAULT_STYLE,
   DEFAULT_THEME,
@@ -17,6 +16,12 @@ import {
 } from "@kyuar/qr";
 import { classifyContent, type RenderRequest } from "@kyuar/shared";
 import { useCallback, useMemo, useState } from "react";
+
+export interface CustomColor {
+  base: string;
+  dark: boolean;
+  partsEdited: boolean;
+}
 
 export interface HalftoneState {
   dataUrl: string;
@@ -43,6 +48,11 @@ export function useEditor(initialData: string) {
   const [themeId, setThemeId] = useState<string | null>(DEFAULT_THEME.id);
   const [logo, setLogo] = useState<string | null>(null);
   const [halftone, setHalftone] = useState<HalftoneState | null>(null);
+  const [customColor, setCustomColor] = useState<CustomColor>({
+    base: DEFAULT_THEME.foreground,
+    dark: false,
+    partsEdited: false,
+  });
 
   const isEmpty = value.trim() === "";
   const content = classifyContent(isEmpty ? "kyuar.app" : value);
@@ -52,10 +62,6 @@ export function useEditor(initialData: string) {
         ? { ...style, logo: { ratio: style.logo.ratio || 0.22 } }
         : { ...style, logo: { ratio: 0 } },
     [logo, style],
-  );
-  const fits = useMemo(
-    () => canEncode(content.value, effectiveStyle),
-    [content.value, effectiveStyle],
   );
 
   const update = useCallback((patch: Partial<QrStyle>, keepTheme = true) => {
@@ -75,6 +81,7 @@ export function useEditor(initialData: string) {
       const colored = withColors(current, theme.foreground, theme.background);
       return {
         ...colored,
+        margin: Math.max(colored.margin, 2),
         data: { ...colored.data, shape: pick(SURPRISE_DOTS) },
         finderOuter: { ...colored.finderOuter, shape: pick(SURPRISE_OUTER) },
         finderInner: { ...colored.finderInner, shape: pick(SURPRISE_INNER) },
@@ -124,7 +131,8 @@ export function useEditor(initialData: string) {
     setLogo,
     halftone,
     setHalftone,
-    fits,
+    customColor,
+    setCustomColor,
     request,
     themeColor,
     inkColor,

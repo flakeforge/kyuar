@@ -32,8 +32,23 @@ export function SheetRow({ label, value, preview, className, children }: SheetRo
           "bg-card text-card-foreground ease-snap focus-visible:ring-ring/50 flex h-14 w-full items-center justify-between rounded-(--radius) px-4 text-left text-base font-medium transition-transform duration-150 outline-none focus-visible:ring-3 active:scale-[0.985]",
         )}
       >
-        <span>{label}</span>
-        <span className="flex size-8 items-center justify-center" aria-hidden="true">
+        <span className="shrink-0">{label}</span>
+        {value && (
+          <span
+            className="text-muted-foreground ml-auto truncate pl-3 text-sm font-normal"
+            aria-hidden="true"
+          >
+            {value}
+          </span>
+        )}
+        <span
+          className={
+            value
+              ? "ml-3 flex size-8 shrink-0 items-center justify-center"
+              : "ml-auto flex size-8 shrink-0 items-center justify-center"
+          }
+          aria-hidden="true"
+        >
           {preview}
         </span>
       </DrawerTrigger>

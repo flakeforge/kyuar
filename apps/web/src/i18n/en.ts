@@ -1,14 +1,19 @@
 export const en = {
   input: {
     label: "Text or link",
-    placeholder: "kyuar.app",
+    placeholder: "Paste a link or text",
+
+    paste: "Paste",
+
+    clear: "Clear",
   },
   preview: {
     label: "QR code preview",
     tooLong: "This is too much text for one QR code. Shorten it or lower error correction.",
+    tooLongLogo: "Too much text for one code with a logo. Remove the logo or shorten the text.",
     lowContrast: "Colors are too close. Phones may not read this code.",
     empty: "Type a link or text to make a code.",
-    tightMargin: "A border under 2 can stop phones from finding the code.",
+    tightMargin: "A thin or missing border can stop phones from finding the code.",
   },
   rows: {
     color: "Color",
@@ -17,7 +22,7 @@ export const en = {
     pixels: "Pixels",
     pupils: "Corner dots",
     eyes: "Corner frames",
-    markers: "Small squares",
+    markers: "Alignment marks",
     strength: "Error correction",
     logo: "Logo",
     picture: "Picture",
@@ -39,6 +44,10 @@ export const en = {
     eccHint: "Higher levels survive damage and logos but make the code denser.",
     boost: "Raise it when there is room",
     logoLocksEcc: "A logo needs maximum error correction. Remove the logo to pick another level.",
+
+    more: "More shapes",
+
+    fewerShapes: "Fewer shapes",
   },
   color: {
     themes: "Themes",
@@ -47,7 +56,7 @@ export const en = {
     pixels: "Pixels",
     eyes: "Corner frames",
     pupils: "Corner dots",
-    markers: "Small squares",
+    markers: "Alignment marks",
     timing: "Dotted lines",
     solid: "Solid",
     linear: "Linear",
@@ -56,11 +65,7 @@ export const en = {
     from: "Start",
     to: "End",
     swatches: "Colors",
-    custom: "Custom color",
-    lightness: "Lightness",
-    chroma: "Saturation",
     hue: "Hue",
-    hex: "Hex",
     scans: "Scans well",
     tooLow: "Too low to scan",
     customTab: "Custom",
@@ -73,6 +78,10 @@ export const en = {
     fewer: "Fewer options",
     base: "Main color",
     autoHint: "Other colors follow from this one and always scan.",
+
+    fill: "Fill",
+
+    editedParts: "Changing the main color replaces the colors you set for each part.",
   },
   image: {
     logoHint: "Placed in the center. Error correction switches to high.",
@@ -97,6 +106,14 @@ export const en = {
     downloaded: "Saved",
     surprised: "New style",
     undo: "Undo",
+
+    downloadTitle: "Download as",
+
+    pngStandard: "PNG, 1024 px",
+
+    pngLarge: "PNG, 2048 px for print",
+
+    svg: "SVG, sharp at any size",
   },
 } as const;
 

@@ -14,7 +14,7 @@ async function encode(svg: string, request: QrRequest) {
     return { body: svg, type: "image/svg+xml; charset=utf-8" };
   }
 
-  const png = toPng(svg);
+  const png = toPng(svg, request.px);
   if (request.format === "png") return { body: new Uint8Array(png), type: "image/png" };
 
   const [background = "#ffffff"] = paintColors(request.style.background);

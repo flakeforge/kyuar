@@ -79,6 +79,12 @@
         "jsx-a11y/label-has-associated-control": "off",
         "react/no-object-type-as-default-prop": "off"
       }
+    },
+    {
+      "files": ["apps/web/src/workers/**", "apps/web/src/lib/use-qr-render.ts"],
+      "rules": {
+        "unicorn/require-post-message-target-origin": "off"
+      }
     }
   ],
   "ignorePatterns": [

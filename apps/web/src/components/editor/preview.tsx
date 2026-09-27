@@ -1,74 +1,75 @@
 "use client";
 
-import { renderQr, type RenderedQr } from "@kyuar/qr";
+import type { RenderInput } from "@kyuar/qr";
 import { Alert, AlertDescription } from "@kyuar/ui/components/alert";
 import { TriangleAlertIcon } from "lucide-react";
 import Image from "next/image";
 import { useMemo } from "react";
 
 import { useMessages } from "~/i18n";
+import { useQrRender, type QrRenderState } from "~/lib/use-qr-render";
 
 import type { EditorModel } from "./use-editor";
 
-export function useRendered(editor: EditorModel): RenderedQr | null {
-  const { content, style, logo, halftone, fits } = editor;
+export function useRendered(editor: EditorModel): QrRenderState {
+  const { content, style, logo, halftone } = editor;
 
-  return useMemo(() => {
-    if (!fits) return null;
-    try {
-      return renderQr({
-        data: content.value,
-        style,
-        logoHref: logo ?? undefined,
-        halftone: halftone
-          ? {
-              image: halftone.image,
-              centerRatio: halftone.centerRatio,
-              contrast: halftone.contrast,
-            }
-          : undefined,
-        idPrefix: "preview",
-      });
-    } catch {
-      return null;
-    }
-  }, [content.value, fits, halftone, logo, style]);
+  const input = useMemo<RenderInput>(
+    () => ({
+      data: content.value,
+      style,
+      logoHref: logo ?? undefined,
+      halftone: halftone
+        ? { image: halftone.image, centerRatio: halftone.centerRatio, contrast: halftone.contrast }
+        : undefined,
+      idPrefix: "preview",
+    }),
+    [content.value, halftone, logo, style],
+  );
+
+  return useQrRender(input);
 }
 
-export function Preview({ rendered, isEmpty }: { rendered: RenderedQr | null; isEmpty: boolean }) {
+interface PreviewProps {
+  rendered: QrRenderState;
+  isEmpty: boolean;
+  hasLogo: boolean;
+}
+
+export function Preview({ rendered, isEmpty, hasLogo }: PreviewProps) {
   const t = useMessages();
 
   return (
     <figure className="aspect-square w-full">
-      {rendered && isEmpty ? (
-        <div className="relative size-full overflow-hidden rounded-(--radius-card)">
+      {rendered.status === "ready" ? (
+        <div className="relative size-full">
           <Image
-            src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(rendered.svg)}`}
+            src={rendered.src}
             alt=""
             width={rendered.size}
             height={rendered.size}
             unoptimized
+            priority
             draggable={false}
-            className="size-full opacity-25 blur-[2px] select-none"
+            className={
+              isEmpty
+                ? "size-full opacity-25 blur-[2px] select-none"
+                : "size-full drop-shadow-[0_18px_22px_color-mix(in_oklab,var(--foreground)_22%,transparent)] select-none"
+            }
           />
-          <p className="text-foreground absolute inset-0 flex items-center justify-center px-10 text-center text-base font-medium text-balance">
-            {t.preview.empty}
-          </p>
+          {isEmpty && (
+            <p className="text-foreground absolute inset-0 flex items-center justify-center px-10 text-center text-base font-medium text-balance">
+              {t.preview.empty}
+            </p>
+          )}
         </div>
-      ) : rendered ? (
-        <Image
-          src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(rendered.svg)}`}
-          alt=""
-          width={rendered.size}
-          height={rendered.size}
-          unoptimized
-          priority
-          draggable={false}
-          className="size-full drop-shadow-[0_18px_22px_color-mix(in_oklab,var(--foreground)_22%,transparent)] select-none"
-        />
       ) : (
         <div className="bg-card text-card-foreground flex size-full items-center justify-center rounded-(--radius-card) px-8 text-center text-sm">
-          {t.preview.tooLong}
+          {rendered.status === "failed"
+            ? hasLogo
+              ? t.preview.tooLongLogo
+              : t.preview.tooLong
+            : null}
         </div>
       )}
       <figcaption className="sr-only">{t.preview.label}</figcaption>
@@ -76,10 +77,10 @@ export function Preview({ rendered, isEmpty }: { rendered: RenderedQr | null; is
   );
 }
 
-export function ScanWarning({ rendered, margin }: { rendered: RenderedQr | null; margin: number }) {
+export function ScanWarning({ rendered, margin }: { rendered: QrRenderState; margin: number }) {
   const t = useMessages();
   const messages = [
-    rendered && rendered.warnings.length > 0 ? t.preview.lowContrast : null,
+    rendered.status === "ready" && rendered.warnings.length > 0 ? t.preview.lowContrast : null,
     margin < 2 ? t.preview.tightMargin : null,
   ].filter((message): message is string => message !== null);
 

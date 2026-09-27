@@ -5,7 +5,6 @@ import {
   FINDER_INNER_FIGURES,
   FINDER_OUTER_FIGURES,
   paintColors,
-  THEMES,
   type AlignmentMode,
   type DotShape,
   type ErrorCorrectionLevel,
@@ -15,16 +14,10 @@ import {
 import { Alert, AlertDescription } from "@kyuar/ui/components/alert";
 import { Field, FieldDescription, FieldLabel } from "@kyuar/ui/components/field";
 import { Switch } from "@kyuar/ui/components/switch";
-import {
-  CrosshairIcon,
-  ExpandIcon,
-  ImageIcon,
-  ImagePlusIcon,
-  TriangleAlertIcon,
-} from "lucide-react";
+import { CrosshairIcon, ImageIcon, ImagePlusIcon, TriangleAlertIcon } from "lucide-react";
 import { useId } from "react";
 
-import { useMessages, useShapeNames } from "~/i18n";
+import { useMessages, useShapeNames, useThemeNames } from "~/i18n";
 
 import { ChoiceGrid, ChoiceList, type Choice } from "./choices";
 import { ColorSheet } from "./color-sheet";
@@ -34,6 +27,20 @@ import { SheetRow } from "./sheet-row";
 import type { EditorModel } from "./use-editor";
 
 const MARGINS = [0, 2, 4, 6] as const;
+const RECOMMENDED_PIXELS: readonly DotShape[] = [
+  "fluid",
+  "square",
+  "dot",
+  "rounded",
+  "extra-rounded",
+  "classy",
+  "classy-rounded",
+  "diamond",
+  "blobs",
+  "soft",
+  "heart",
+  "vertical-line",
+];
 const RADII = { none: 0, round: 0.5, extra: 1 } as const;
 const LEVELS: ErrorCorrectionLevel[] = ["L", "M", "Q", "H"];
 
@@ -43,6 +50,17 @@ function CornerPreview({ radius }: { radius: number }) {
       className="bg-foreground/25 block size-7"
       style={{ borderRadius: `${Math.round(radius * 12)}px` }}
     />
+  );
+}
+
+function BorderPreview({ margin }: { margin: number }) {
+  return (
+    <span className="border-foreground/40 flex size-7 items-center justify-center rounded-[5px] border">
+      <span
+        className="bg-foreground block rounded-[2px]"
+        style={{ width: `${26 - margin * 2}px`, height: `${26 - margin * 2}px` }}
+      />
+    </span>
   );
 }
 
@@ -64,6 +82,7 @@ export function Controls({
 }) {
   const t = useMessages();
   const names = useShapeNames();
+  const themeNames = useThemeNames();
   const boostId = useId();
   const { style, update, logo, halftone } = editor;
   const [background = "#ffffff"] = paintColors(style.background);
@@ -122,9 +141,7 @@ export function Controls({
   const marginLabel = marginChoices.find((choice) => choice.value === String(style.margin))?.label;
   const radiusLabel = radiusChoices.find((choice) => choice.value === radiusKey)?.label;
   const markerLabel = markerChoices.find((choice) => choice.value === style.alignment.mode)?.label;
-  const themeLabel = editor.themeId
-    ? THEMES.find((theme) => theme.id === editor.themeId)?.name
-    : t.color.customTab;
+  const themeLabel = editor.themeId ? themeNames[editor.themeId] : t.color.customTab;
 
   return (
     <div className="flex flex-col gap-2">
@@ -146,7 +163,7 @@ export function Controls({
         className={itemClassName}
         label={t.rows.margin}
         value={marginLabel}
-        preview={<ExpandIcon className="size-5" />}
+        preview={<BorderPreview margin={style.margin} />}
       >
         <div className="flex flex-col gap-4">
           <ChoiceList
@@ -187,6 +204,7 @@ export function Controls({
         <ChoiceGrid
           label={t.rows.pixels}
           choices={pixelChoices}
+          recommended={RECOMMENDED_PIXELS}
           value={style.data.shape}
           onChange={(shape) => update({ data: { ...style.data, shape } })}
         />

@@ -1,8 +1,10 @@
 "use client";
 
 import { hexToOklch, oklchToHex } from "@kyuar/qr";
+import { Button } from "@kyuar/ui/components/button";
 import { Input } from "@kyuar/ui/components/input";
 import { Separator } from "@kyuar/ui/components/separator";
+import { ClipboardPasteIcon, XIcon } from "lucide-react";
 import { useEffect } from "react";
 
 import { useMessages } from "~/i18n";
@@ -24,7 +26,7 @@ function pageBackground(theme: string) {
 
 export function Editor({ initialData }: { initialData: string }) {
   const t = useMessages();
-  useTelegram();
+  const isTelegram = useTelegram();
   const editor = useEditor(initialData);
   const rendered = useRendered(editor);
   const { themeColor, inkColor } = editor;
@@ -43,29 +45,55 @@ export function Editor({ initialData }: { initialData: string }) {
         <header className={styles.header}>
           <div className={styles.backdrop} />
           <div className={styles.code}>
-            <Preview rendered={rendered} isEmpty={editor.isEmpty} />
+            <Preview rendered={rendered} isEmpty={editor.isEmpty} hasLogo={Boolean(editor.logo)} />
           </div>
         </header>
 
         <ScanWarning rendered={rendered} margin={editor.style.margin} />
 
-        <Input
-          aria-label={t.input.label}
-          value={editor.value}
-          onChange={(event) => editor.setValue(event.target.value)}
-          placeholder={t.input.placeholder}
-          autoComplete="off"
-          autoCapitalize="none"
-          spellCheck={false}
-          className={`${styles.item} bg-card text-card-foreground h-14 rounded-(--radius) border-transparent text-center text-base font-medium`}
-        />
+        <div className={`${styles.item} relative`}>
+          <Input
+            aria-label={t.input.label}
+            value={editor.value}
+            onChange={(event) => editor.setValue(event.target.value)}
+            placeholder={t.input.placeholder}
+            autoComplete="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            className="bg-card text-card-foreground border-input h-14 rounded-(--radius) px-14 text-center text-base font-medium"
+          />
+          {editor.value ? (
+            <Button
+              variant="ghost"
+              size="icon-xl"
+              aria-label={t.input.clear}
+              className="text-muted-foreground absolute top-1 right-1"
+              onClick={() => editor.setValue("")}
+            >
+              <XIcon />
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon-xl"
+              aria-label={t.input.paste}
+              className="text-muted-foreground absolute top-1 right-1"
+              onClick={async () => {
+                const text = await navigator.clipboard?.readText().catch(() => "");
+                if (text) editor.setValue(text.trim());
+              }}
+            >
+              <ClipboardPasteIcon />
+            </Button>
+          )}
+        </div>
 
         <Separator className={`${styles.item} my-2`} />
 
         <Controls editor={editor} itemClassName={styles.item} />
       </main>
 
-      <ActionBar editor={editor} />
+      <ActionBar editor={editor} fits={rendered.status !== "failed"} isTelegram={isTelegram} />
     </>
   );
 }

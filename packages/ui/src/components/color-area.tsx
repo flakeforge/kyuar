@@ -8,6 +8,7 @@ interface ColorAreaProps {
   saturation: number;
   value: number;
   onChange: (saturation: number, value: number) => void;
+  onChangeEnd?: () => void;
   thumbColor: string;
   "aria-label": string;
   className?: string;
@@ -30,6 +31,7 @@ function ColorArea({
   saturation,
   value,
   onChange,
+  onChangeEnd,
   thumbColor,
   "aria-label": ariaLabel,
   className,
@@ -85,6 +87,9 @@ function ColorArea({
         if (event.currentTarget.hasPointerCapture(event.pointerId)) pick(event);
       }}
       onKeyDown={onKeyDown}
+      onKeyUp={onChangeEnd}
+      onPointerUp={onChangeEnd}
+      onPointerCancel={onChangeEnd}
     >
       <span
         aria-hidden="true"

@@ -57,10 +57,10 @@
   --secondary: color-mix(in oklab, var(--theme) 22%, white);
   --secondary-foreground: color-mix(in oklab, var(--theme) 30%, black);
   --muted: color-mix(in oklab, var(--theme) 18%, white);
-  --muted-foreground: color-mix(in oklab, var(--theme) 48%, black);
+  --muted-foreground: color-mix(in oklab, var(--foreground) 62%, var(--background));
   --accent: color-mix(in oklab, var(--theme) 30%, white);
   --accent-foreground: color-mix(in oklab, var(--theme) 30%, black);
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: oklch(0.5 0.2 27);
   --border: color-mix(in oklab, var(--theme) 28%, white);
   --input: color-mix(in oklab, var(--theme) 45%, white);
   --ring: color-mix(in oklab, var(--theme) 30%, black);

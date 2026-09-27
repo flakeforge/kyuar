@@ -1,11 +1,9 @@
 import { Resvg } from "@resvg/resvg-js";
 import sharp from "sharp";
 
-const RASTER_WIDTH = 1024;
-
-export function toPng(svg: string): Buffer {
+export function toPng(svg: string, width = 1024): Buffer {
   return new Resvg(svg, {
-    fitTo: { mode: "width", value: RASTER_WIDTH },
+    fitTo: { mode: "width", value: width },
     font: { loadSystemFonts: false },
   })
     .render()

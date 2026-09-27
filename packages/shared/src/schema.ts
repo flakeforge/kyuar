@@ -79,9 +79,15 @@ export const qrStyleSchema: z.ZodType<QrStyle, unknown> = z.object({
 
 export const formatSchema = z.enum(["svg", "png", "jpg"]);
 
+export const RASTER_SIZES = [1024, 2048] as const;
+
 export const qrRequestSchema = z.object({
   data: z.string().min(1, "Enter something to encode").max(MAX_QR_DATA_LENGTH),
   format: formatSchema.default("png"),
+  px: z.coerce
+    .number()
+    .refine((value) => (RASTER_SIZES as readonly number[]).includes(value), "Unsupported size")
+    .default(1024),
   style: qrStyleSchema.default(D),
 });
 

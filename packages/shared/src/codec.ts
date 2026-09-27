@@ -20,6 +20,7 @@ function changedSections(style: QrStyle): Partial<QrStyle> {
  */
 export function encodeQrQuery(request: QrRequest): string {
   const params = new URLSearchParams({ d: request.data, t: request.format });
+  if (request.px !== 1024) params.set("w", String(request.px));
   const changed = changedSections(request.style);
   if (Object.keys(changed).length > 0) params.set("s", toBase64Url(JSON.stringify(changed)));
   return params.toString();
@@ -38,6 +39,7 @@ export function decodeQrQuery(params: URLSearchParams): QrRequest {
   return qrRequestSchema.parse({
     data: params.get("d") ?? undefined,
     format: params.get("t") ?? undefined,
+    px: params.get("w") ?? undefined,
     style,
   });
 }

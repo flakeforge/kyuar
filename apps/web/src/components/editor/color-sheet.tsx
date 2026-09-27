@@ -19,9 +19,9 @@ import { Switch } from "@kyuar/ui/components/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@kyuar/ui/components/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@kyuar/ui/components/toggle-group";
 import { ChevronDownIcon } from "lucide-react";
-import { useId, useState } from "react";
+import { useState } from "react";
 
-import { useMessages } from "~/i18n";
+import { useMessages, useThemeNames } from "~/i18n";
 import { single } from "~/lib/slider";
 import { haptic } from "~/lib/telegram";
 
@@ -93,9 +93,8 @@ export function ColorSheet({ editor }: { editor: EditorModel }) {
   const [stop, setStop] = useState<Stop>("from");
   const [advanced, setAdvanced] = useState(false);
   const [tab, setTab] = useState<SheetTab>(() => (themeId ? "themes" : "custom"));
-  const [base, setBase] = useState(() => stopColor(style.data.paint, "from"));
-  const [dark, setDark] = useState(false);
-  const darkId = useId();
+  const { base, dark, partsEdited } = editor.customColor;
+  const themeNames = useThemeNames();
   const palette = derivePalette(base, dark);
 
   const paint = readPaint(style, part);
@@ -108,10 +107,12 @@ export function ColorSheet({ editor }: { editor: EditorModel }) {
   const ratio = contrastRatio(color, against);
   const scans = ratio >= MIN_SCAN_CONTRAST;
 
-  const setPaint = (next: Paint) => update(writePaint(style, part, next), false);
+  const setPaint = (next: Paint) => {
+    update(writePaint(style, part, next), false);
+    editor.setCustomColor((current) => ({ ...current, partsEdited: true }));
+  };
   const setAuto = (nextBase: string, nextDark: boolean) => {
-    setBase(nextBase);
-    setDark(nextDark);
+    editor.setCustomColor({ base: nextBase, dark: nextDark, partsEdited: false });
     update(applyPalette(style, derivePalette(nextBase, nextDark)), false);
   };
 
@@ -140,8 +141,8 @@ export function ColorSheet({ editor }: { editor: EditorModel }) {
             <ToggleGroupItem
               key={theme.id}
               value={theme.id}
-              aria-label={theme.name}
-              title={theme.name}
+              aria-label={themeNames[theme.id] ?? theme.name}
+              title={themeNames[theme.id] ?? theme.name}
               className="aspect-square h-auto w-full"
               style={{
                 background: `linear-gradient(135deg, ${theme.background} 50%, ${theme.foreground} 50%)`,
@@ -152,11 +153,15 @@ export function ColorSheet({ editor }: { editor: EditorModel }) {
       </TabsContent>
 
       <TabsContent value="custom" className="flex flex-col gap-5">
-        <Field>
-          <FieldLabel>{t.color.base}</FieldLabel>
-          <ColorPicker value={base} onChange={(hex) => setAuto(hex, dark)} />
-          <FieldDescription>{t.color.autoHint}</FieldDescription>
-        </Field>
+        {!advanced && (
+          <Field>
+            <FieldLabel>{t.color.base}</FieldLabel>
+            <ColorPicker value={base} onChange={(hex) => setAuto(hex, dark)} />
+            <FieldDescription>
+              {partsEdited ? t.color.editedParts : t.color.autoHint}
+            </FieldDescription>
+          </Field>
+        )}
 
         <div className="flex items-center gap-2" aria-hidden="true">
           {(["background", "modules", "frames", "centers"] as const).map((key) => (
@@ -168,14 +173,10 @@ export function ColorSheet({ editor }: { editor: EditorModel }) {
           ))}
         </div>
 
-        <Field orientation="horizontal">
-          <FieldLabel htmlFor={darkId}>{t.color.darkBackground}</FieldLabel>
-          <Switch
-            id={darkId}
-            checked={dark}
-            onCheckedChange={(checked) => setAuto(base, checked)}
-          />
-        </Field>
+        <FieldLabel className="flex min-h-11 w-full items-center justify-between">
+          {t.color.darkBackground}
+          <Switch checked={dark} onCheckedChange={(checked) => setAuto(base, checked)} />
+        </FieldLabel>
 
         <Button
           variant="ghost"
@@ -209,6 +210,7 @@ export function ColorSheet({ editor }: { editor: EditorModel }) {
             </ToggleGroup>
 
             <ToggleGroup
+              aria-label={t.color.fill}
               value={[paint.type]}
               onValueChange={(next) => {
                 const [type] = next as Paint["type"][];
@@ -290,7 +292,7 @@ export function ColorSheet({ editor }: { editor: EditorModel }) {
               }}
               variant="swatch"
               spacing={2}
-              className="grid w-full grid-cols-7 gap-3"
+              className="grid w-full grid-cols-6 gap-3"
             >
               {SWATCHES.map((swatch) => (
                 <ToggleGroupItem

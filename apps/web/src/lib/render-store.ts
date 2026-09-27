@@ -14,7 +14,9 @@ const HALFTONE_SIZE = 256;
 const MAX_INPUT_PIXELS = 4096 * 4096;
 const RENDER_ID = /^[0-9a-f-]{36}$/;
 
-export type RasterFormat = "png" | "jpg";
+export const RENDER_FORMATS = ["png", "png2048", "jpg", "svg"] as const;
+
+export type RenderFormat = (typeof RENDER_FORMATS)[number];
 
 function fromDataUrl(dataUrl: string): Buffer {
   return Buffer.from(dataUrl.slice(dataUrl.indexOf(",") + 1), "base64");
@@ -42,7 +44,14 @@ async function grayImage(dataUrl: string): Promise<GrayImage> {
  * re-encoded by sharp before they reach the SVG, so nothing the client sent is
  * embedded as is.
  */
-export async function renderImages(request: RenderRequest): Promise<{ png: Buffer; jpeg: Buffer }> {
+export interface RenderedImages {
+  png: Buffer;
+  png2048: Buffer;
+  jpg: Buffer;
+  svg: Buffer;
+}
+
+export async function renderImages(request: RenderRequest): Promise<RenderedImages> {
   const [logoHref, image] = await Promise.all([
     request.logo ? sanitizeLogo(request.logo) : undefined,
     request.halftone ? grayImage(request.halftone.image) : undefined,
@@ -64,31 +73,36 @@ export async function renderImages(request: RenderRequest): Promise<{ png: Buffe
 
   const png = toPng(svg);
   const [background = "#ffffff"] = paintColors(request.style.background);
-  return { png, jpeg: await toJpeg(png, background) };
+  return {
+    png,
+    png2048: toPng(svg, 2048),
+    jpg: await toJpeg(png, background),
+    svg: Buffer.from(svg),
+  };
 }
 
 /**
  * Stores a rendered code for ten minutes so Telegram can fetch it by URL for
  * downloads and shared messages. Returns `undefined` without Redis.
  */
-export async function storeRender(images: {
-  png: Buffer;
-  jpeg: Buffer;
-}): Promise<string | undefined> {
+export async function storeRender(images: RenderedImages): Promise<string | undefined> {
   const connection = getRedis();
   if (!connection) return undefined;
 
   const redis = await connection;
   const id = randomUUID();
+  const expiration = { expiration: { type: "EX", value: TTL_SECONDS } } as const;
   await redis
     .multi()
-    .set(`render:${id}:png`, images.png, { expiration: { type: "EX", value: TTL_SECONDS } })
-    .set(`render:${id}:jpg`, images.jpeg, { expiration: { type: "EX", value: TTL_SECONDS } })
+    .set(`render:${id}:png`, images.png, expiration)
+    .set(`render:${id}:png2048`, images.png2048, expiration)
+    .set(`render:${id}:jpg`, images.jpg, expiration)
+    .set(`render:${id}:svg`, images.svg, expiration)
     .exec();
   return id;
 }
 
-export async function loadRender(id: string, format: RasterFormat): Promise<Buffer | undefined> {
+export async function loadRender(id: string, format: RenderFormat): Promise<Buffer | undefined> {
   if (!RENDER_ID.test(id)) return undefined;
   const connection = getRedis();
   if (!connection) return undefined;

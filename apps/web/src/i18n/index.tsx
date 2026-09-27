@@ -9,12 +9,14 @@ import { isTelegramStarted, subscribeTelegram, telegramLanguage } from "~/lib/te
 import { en, type Messages } from "./en";
 import { ru } from "./ru";
 import { SHAPE_NAMES, type ShapeNames } from "./shapes";
+import { THEME_NAMES } from "./themes";
 import { uz } from "./uz";
 
 const MESSAGES: Record<Locale, Messages> = { en, uz, ru };
 
 const MessagesContext = createContext<Messages>(en);
 const ShapeNamesContext = createContext<ShapeNames>(SHAPE_NAMES.en);
+const ThemeNamesContext = createContext<Record<string, string>>(THEME_NAMES.en);
 
 function telegramLocale(): Locale | undefined {
   if (!isTelegramStarted()) return undefined;
@@ -36,7 +38,9 @@ export function MessagesProvider({ locale, children }: { locale: Locale; childre
 
   return (
     <MessagesContext value={MESSAGES[active]}>
-      <ShapeNamesContext value={SHAPE_NAMES[active]}>{children}</ShapeNamesContext>
+      <ShapeNamesContext value={SHAPE_NAMES[active]}>
+        <ThemeNamesContext value={THEME_NAMES[active]}>{children}</ThemeNamesContext>
+      </ShapeNamesContext>
     </MessagesContext>
   );
 }
@@ -47,4 +51,8 @@ export function useMessages(): Messages {
 
 export function useShapeNames(): ShapeNames {
   return useContext(ShapeNamesContext);
+}
+
+export function useThemeNames(): Record<string, string> {
+  return useContext(ThemeNamesContext);
 }

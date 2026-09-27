@@ -24,6 +24,9 @@ import { PipetteIcon } from "lucide-react";
 import { useState, useSyncExternalStore } from "react";
 
 import { useMessages } from "~/i18n";
+import { useDebouncedCallback } from "~/lib/use-debounced-callback";
+
+const COMMIT_DELAY_MS = 60;
 
 const FORMATS: { value: ColorFormat; label: string }[] = [
   { value: "hex", label: "HEX" },
@@ -68,22 +71,26 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
   const t = useMessages();
   const EyeDropper = useEyeDropper();
   const [hsv, setHsv] = useState<Hsv>(() => hexToHsv(value));
-  const [seen, setSeen] = useState(value);
+  const [incoming, setIncoming] = useState(value);
   const [format, setFormat] = useState<ColorFormat>("hex");
   const [draft, setDraft] = useState(() => formatColor(value, "hex"));
+  const liveHex = hsvToHex(hsv);
 
-  if (value !== seen) {
-    setSeen(value);
-    setHsv(hexToHsv(value));
-    setDraft(formatColor(value, format));
+  if (value !== incoming) {
+    setIncoming(value);
+    if (value !== liveHex) {
+      setHsv(hexToHsv(value));
+      setDraft(formatColor(value, format));
+    }
   }
+
+  const debounced = useDebouncedCallback(onChange, COMMIT_DELAY_MS);
 
   const emit = (next: Hsv) => {
     const hex = hsvToHex(next);
     setHsv(next);
-    setSeen(hex);
     setDraft(formatColor(hex, format));
-    onChange(hex);
+    debounced.call(hex);
   };
 
   const commit = (hex: string | undefined) => {
@@ -91,7 +98,6 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
       setDraft(formatColor(value, format));
       return;
     }
-    setSeen(hex);
     setHsv(hexToHsv(hex));
     setDraft(formatColor(hex, format));
     onChange(hex);
@@ -104,16 +110,18 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
         hue={hsv.h}
         saturation={hsv.s}
         value={hsv.v}
-        thumbColor={value}
+        thumbColor={liveHex}
         onChange={(s, v) => emit({ ...hsv, s, v })}
+        onChangeEnd={debounced.flush}
       />
       <ColorSlider
         aria-label={t.color.hue}
         min={0}
         max={360}
         step={1}
-        value={hsv.h}
+        value={Math.round(hsv.h)}
         onValueChange={(h) => emit({ ...hsv, h })}
+        onValueCommitted={debounced.flush}
         track={HUE_TRACK}
         thumbColor={hsvToHex({ h: hsv.h, s: 1, v: 1 })}
       />

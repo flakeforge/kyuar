@@ -14,6 +14,12 @@ export const en = {
     lowContrast: "Colors are too close. Phones may not read this code.",
     empty: "Type a link or text to make a code.",
     tightMargin: "A thin or missing border can stop phones from finding the code.",
+
+    checkGood: "Reads well in {passed} of {total} tests.",
+    checkFair: "Reads in {passed} of {total} tests. Small or blurry prints may fail.",
+    checkPoor:
+      "Hard to read: {passed} of {total} tests. Try more contrast, a simpler shape or a wider border.",
+    checkLabel: "Scan test",
   },
   rows: {
     color: "Color",

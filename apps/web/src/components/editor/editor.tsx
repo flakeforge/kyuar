@@ -10,12 +10,13 @@ import { useEffect, useState } from "react";
 import { ScanSheet } from "~/components/scan/scan-sheet";
 import { useMessages } from "~/i18n";
 import { setHeaderColor } from "~/lib/telegram";
+import { useScanCheck } from "~/lib/use-scan-check";
 import { useTelegram } from "~/lib/use-telegram";
 
 import { ActionBar } from "./action-bar";
 import { Controls } from "./controls";
 import styles from "./editor.module.css";
-import { Preview, ScanWarning, useRendered } from "./preview";
+import { Preview, ScanScore, ScanWarning, useRendered } from "./preview";
 import { useEditor } from "./use-editor";
 
 const PAGE_TINT = 0.12;
@@ -31,6 +32,10 @@ export function Editor({ initialData }: { initialData: string }) {
   const [scanOpen, setScanOpen] = useState(false);
   const editor = useEditor(initialData);
   const rendered = useRendered(editor);
+  const scanCheck = useScanCheck(
+    rendered.status === "ready" && !editor.isEmpty ? rendered.src : undefined,
+    editor.content.value,
+  );
   const { themeColor, inkColor } = editor;
 
   useEffect(() => {
@@ -52,6 +57,9 @@ export function Editor({ initialData }: { initialData: string }) {
         </header>
 
         <ScanWarning rendered={rendered} margin={editor.style.margin} />
+        <div className={styles.item}>
+          <ScanScore check={scanCheck} />
+        </div>
 
         <div className={`${styles.item} relative`}>
           <Input

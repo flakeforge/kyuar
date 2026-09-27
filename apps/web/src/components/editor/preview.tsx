@@ -2,12 +2,13 @@
 
 import type { RenderInput } from "@kyuar/qr";
 import { Alert, AlertDescription } from "@kyuar/ui/components/alert";
-import { TriangleAlertIcon } from "lucide-react";
+import { ShieldCheckIcon, TriangleAlertIcon } from "lucide-react";
 import Image from "next/image";
 import { useMemo } from "react";
 
 import { useMessages } from "~/i18n";
 import { useQrRender, type QrRenderState } from "~/lib/use-qr-render";
+import type { ScanCheck } from "~/lib/use-scan-check";
 
 import type { EditorModel } from "./use-editor";
 
@@ -91,5 +92,40 @@ export function ScanWarning({ rendered, margin }: { rendered: QrRenderState; mar
       <TriangleAlertIcon />
       <AlertDescription>{messages.join(" ")}</AlertDescription>
     </Alert>
+  );
+}
+
+export function ScanScore({ check }: { check: ScanCheck | undefined }) {
+  const t = useMessages();
+  if (!check) return null;
+
+  const template =
+    check.passed === check.total
+      ? t.preview.checkGood
+      : check.passed >= check.total / 2
+        ? t.preview.checkFair
+        : t.preview.checkPoor;
+  const text = template
+    .replace("{passed}", String(check.passed))
+    .replace("{total}", String(check.total));
+
+  if (check.passed < check.total / 2) {
+    return (
+      <Alert variant="destructive" aria-live="polite">
+        <TriangleAlertIcon />
+        <AlertDescription>{text}</AlertDescription>
+      </Alert>
+    );
+  }
+
+  return (
+    <p
+      className="text-muted-foreground flex items-center justify-center gap-2 text-sm"
+      aria-live="polite"
+    >
+      <ShieldCheckIcon className="size-4" aria-hidden="true" />
+      <span className="sr-only">{t.preview.checkLabel}: </span>
+      {text}
+    </p>
   );
 }

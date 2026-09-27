@@ -41,7 +41,18 @@ export async function scanFile(file: File): Promise<string | undefined> {
   context.drawImage(bitmap, 0, 0, width, height);
   bitmap.close();
   const { data } = context.getImageData(0, 0, width, height);
+  return decodePixels(width, height, data);
+}
 
+/**
+ * Decodes raw RGBA pixels in the scan worker. The pixel buffer is transferred,
+ * so the caller must not reuse it.
+ */
+export function decodePixels(
+  width: number,
+  height: number,
+  data: Uint8ClampedArray,
+): Promise<string | undefined> {
   nextJob += 1;
   const id = nextJob;
   const target = getWorker();

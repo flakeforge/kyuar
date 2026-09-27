@@ -18,6 +18,13 @@ export const uz: Messages = {
     lowContrast: "Ranglar bir-biriga juda yaqin. Telefon bu kodni oʻqimasligi mumkin.",
     empty: "Kod yaratish uchun havola yoki matn yozing.",
     tightMargin: "Chekka ingichka yoki umuman yoʻq boʻlsa, telefon kodni topmasligi mumkin.",
+
+    checkGood: "{total} ta sinovdan {passed} tasida yaxshi oʻqiladi.",
+    checkFair:
+      "{total} ta sinovdan {passed} tasida oʻqiladi. Kichik yoki xira chop etilsa oʻqilmasligi mumkin.",
+    checkPoor:
+      "Qiyin oʻqiladi: {total} ta sinovdan {passed} tasi. Kontrastni oshiring, oddiyroq shakl yoki kengroq chekka tanlang.",
+    checkLabel: "Skan sinovi",
   },
   rows: {
     color: "Rang",

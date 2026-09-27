@@ -1,17 +1,23 @@
 import { InlineKeyboard } from "grammy";
 import type { Bot } from "grammy";
+import type { Chat } from "grammy/types";
 
-import { defaultRequest, imageUrl, miniAppUrl } from "../config";
+import { defaultRequest, imageUrl, miniAppUrl, startAppUrl } from "../config";
 import { botMessages } from "../i18n";
 
-function startKeyboard(label: string, input?: string) {
-  return new InlineKeyboard().webApp(label, miniAppUrl(input));
+/**
+ * Telegram rejects `web_app` buttons outside private chats, so groups and
+ * channels get a `startapp` link that opens the same Mini App.
+ */
+export function startKeyboard(chatType: Chat["type"], label: string, input?: string) {
+  if (chatType === "private") return new InlineKeyboard().webApp(label, miniAppUrl(input));
+  return new InlineKeyboard().url(label, startAppUrl(input));
 }
 
 export function registerCommands(bot: Bot) {
   bot.command("start", async (ctx) => {
     const t = botMessages(ctx.from?.language_code);
-    await ctx.reply(t.welcome, { reply_markup: startKeyboard(t.openEditor) });
+    await ctx.reply(t.welcome, { reply_markup: startKeyboard(ctx.chat.type, t.openEditor) });
   });
 
   bot.command("help", async (ctx) => {
@@ -34,7 +40,7 @@ export function registerCommands(bot: Bot) {
 
     await ctx.replyWithPhoto(imageUrl(request), {
       caption: input.length > 900 ? undefined : input,
-      reply_markup: startKeyboard(t.openEditor, input),
+      reply_markup: startKeyboard(ctx.chat.type, t.openEditor, input),
     });
   });
 }

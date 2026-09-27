@@ -16,6 +16,9 @@ updates:
       runtime:
         dependency-type: production
         update-types: [minor, patch]
+    ignore:
+      - dependency-name: typescript
+        versions: [">=7"]
 
   - package-ecosystem: github-actions
     directory: /

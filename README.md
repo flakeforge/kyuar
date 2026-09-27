@@ -18,11 +18,12 @@ App.
 
 ## Surfaces
 
-| Surface      | How it works                                                      |
-| ------------ | ----------------------------------------------------------------- |
-| Inline       | Type `@kyuarbot https://example.com` in any chat and pick a color |
-| Private chat | Send the bot any text and get a QR code back                      |
-| Mini App     | Tap the button to open the editor, then download or share         |
+| Surface      | How it works                                                                   |
+| ------------ | ------------------------------------------------------------------------------ |
+| Inline       | Type `@kyuarbot https://example.com` in any chat and pick a color              |
+| Private chat | Send the bot any text and get a QR code back                                   |
+| Mini App     | Tap the button to open the editor, then download or share                      |
+| Scan         | Scan with the Telegram camera, from a photo, or send the bot a photo of a code |
 
 All three render through the same engine, so a code made inline looks identical
 to one made in the editor.

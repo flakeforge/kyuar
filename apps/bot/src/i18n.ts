@@ -1,4 +1,4 @@
-import { resolveLocale, type Locale } from "@kyuar/shared";
+import { resolveLocale, type LinkWarning, type Locale, type ScannedContent } from "@kyuar/shared";
 
 interface BotMessages {
   welcome: string;
@@ -9,6 +9,12 @@ interface BotMessages {
   makeYourOwn: string;
   openEditorInline: string;
   shareTitle: string;
+  scanNotFound: string;
+  scanFailed: string;
+  scanKinds: Record<ScannedContent["kind"], string>;
+  scanWarnings: Record<LinkWarning, string>;
+  openLink: string;
+  styleIt: string;
 }
 
 const MESSAGES: Record<Locale, BotMessages> = {
@@ -34,6 +40,28 @@ const MESSAGES: Record<Locale, BotMessages> = {
     makeYourOwn: "Make your own",
     openEditorInline: "Open the kyuar editor",
     shareTitle: "QR code",
+    scanNotFound: "I could not find a QR code in this image. Send a sharper photo or a screenshot.",
+    scanFailed: "I could not read this file. Send a photo or an image.",
+    scanKinds: {
+      url: "Link",
+      wifi: "Wi-Fi",
+      contact: "Contact",
+      email: "Email",
+      phone: "Phone",
+      sms: "SMS",
+      geo: "Location",
+      text: "Text",
+    },
+    scanWarnings: {
+      "unsafe-scheme": "Not a web link, it could run something on your device.",
+      insecure: "Not encrypted (http).",
+      shortener: "A short link hides where it goes.",
+      lookalike: "The address imitates another site's name.",
+      "ip-address": "Points to a bare IP address.",
+      credentials: "Carries a login and password.",
+    },
+    openLink: "Open link",
+    styleIt: "Style this code",
   },
   uz: {
     welcome: [
@@ -57,6 +85,28 @@ const MESSAGES: Record<Locale, BotMessages> = {
     makeYourOwn: "Oʻzingiznikini yarating",
     openEditorInline: "kyuar editorini ochish",
     shareTitle: "QR kod",
+    scanNotFound: "Bu rasmda QR kod topilmadi. Aniqroq rasm yoki skrinshot yuboring.",
+    scanFailed: "Bu faylni oʻqib boʻlmadi. Rasm yuboring.",
+    scanKinds: {
+      url: "Havola",
+      wifi: "Wi-Fi",
+      contact: "Kontakt",
+      email: "Email",
+      phone: "Telefon",
+      sms: "SMS",
+      geo: "Joylashuv",
+      text: "Matn",
+    },
+    scanWarnings: {
+      "unsafe-scheme": "Veb-havola emas, qurilmangizda biror narsani ishga tushirishi mumkin.",
+      insecure: "Shifrlanmagan (http).",
+      shortener: "Qisqa havola qayerga olib borishini yashiradi.",
+      lookalike: "Manzil boshqa sayt nomiga oʻxshatilgan.",
+      "ip-address": "Oddiy IP manzilga olib boradi.",
+      credentials: "Ichida login va parol bor.",
+    },
+    openLink: "Havolani ochish",
+    styleIt: "Shu kodni bezash",
   },
   ru: {
     welcome: [
@@ -81,6 +131,28 @@ const MESSAGES: Record<Locale, BotMessages> = {
     makeYourOwn: "Сделать свой",
     openEditorInline: "Открыть редактор kyuar",
     shareTitle: "QR-код",
+    scanNotFound: "На этом изображении нет QR-кода. Пришлите более чёткое фото или скриншот.",
+    scanFailed: "Не удалось прочитать файл. Пришлите фото или картинку.",
+    scanKinds: {
+      url: "Ссылка",
+      wifi: "Wi-Fi",
+      contact: "Контакт",
+      email: "Почта",
+      phone: "Телефон",
+      sms: "SMS",
+      geo: "Место",
+      text: "Текст",
+    },
+    scanWarnings: {
+      "unsafe-scheme": "Это не веб-ссылка, она может что-то запустить на устройстве.",
+      insecure: "Не зашифрована (http).",
+      shortener: "Короткая ссылка скрывает, куда ведёт.",
+      lookalike: "Адрес подражает названию другого сайта.",
+      "ip-address": "Ведёт на голый IP-адрес.",
+      credentials: "Содержит логин и пароль.",
+    },
+    openLink: "Открыть ссылку",
+    styleIt: "Оформить этот код",
   },
 };
 

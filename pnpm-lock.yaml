@@ -53,6 +53,9 @@ importers:
       grammy:
         specifier: ^1.46.0
         version: 1.46.0
+      sharp:
+        specifier: ^0.35.4
+        version: 0.35.4(@types/node@24.13.6)
     devDependencies:
       '@types/node':
         specifier: ^24.10.1

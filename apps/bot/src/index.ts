@@ -3,6 +3,7 @@ import { Bot } from "grammy";
 
 import { registerCommands } from "./handlers/commands";
 import { registerInline } from "./handlers/inline";
+import { registerScan } from "./handlers/scan";
 
 let instance: Bot | undefined;
 
@@ -11,6 +12,7 @@ function create() {
 
   registerCommands(bot);
   registerInline(bot);
+  registerScan(bot);
 
   bot.catch((error) => {
     console.error("Bot error while handling update", error.ctx.update.update_id, error.error);

@@ -4,17 +4,21 @@ import { hexToOklch, oklchToHex } from "@kyuar/qr";
 import { Button } from "@kyuar/ui/components/button";
 import { Input } from "@kyuar/ui/components/input";
 import { Separator } from "@kyuar/ui/components/separator";
-import { ClipboardPasteIcon, ScanLineIcon, XIcon } from "lucide-react";
+import { ClipboardPasteIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { ScanSheet } from "~/components/scan/scan-sheet";
+import { ScanActions } from "~/components/scan/scan-actions";
+import { ScanView } from "~/components/scan/scan-view";
+import { useScan } from "~/components/scan/use-scan";
 import { useMessages } from "~/i18n";
+import { cameraAvailable } from "~/lib/scanner";
 import { setHeaderColor } from "~/lib/telegram";
 import { useScanCheck } from "~/lib/use-scan-check";
 import { useTelegram } from "~/lib/use-telegram";
 
-import { ActionBar } from "./action-bar";
 import { Controls } from "./controls";
+import { CreateActions } from "./create-actions";
+import { Dock, type Mode } from "./dock";
 import styles from "./editor.module.css";
 import { Preview, ScanScore, ScanWarning, useRendered } from "./preview";
 import { useEditor } from "./use-editor";
@@ -29,7 +33,8 @@ function pageBackground(theme: string) {
 export function Editor({ initialData }: { initialData: string }) {
   const t = useMessages();
   const isTelegram = useTelegram();
-  const [scanOpen, setScanOpen] = useState(false);
+  const [mode, setMode] = useState<Mode>("create");
+  const scan = useScan();
   const editor = useEditor(initialData);
   const rendered = useRendered(editor);
   const scanCheck = useScanCheck(
@@ -47,7 +52,10 @@ export function Editor({ initialData }: { initialData: string }) {
 
   return (
     <>
-      <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-3 px-4 pb-36">
+      <main
+        hidden={mode !== "create"}
+        className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-3 px-4 pb-52"
+      >
         <h1 className="sr-only">kyuar</h1>
         <header className={styles.header}>
           <div className={styles.backdrop} />
@@ -72,15 +80,6 @@ export function Editor({ initialData }: { initialData: string }) {
             spellCheck={false}
             className="bg-card text-card-foreground border-input h-14 rounded-(--radius) px-14 text-center text-base font-medium"
           />
-          <Button
-            variant="ghost"
-            size="icon-xl"
-            aria-label={t.scan.open}
-            className="text-muted-foreground absolute top-1 left-1"
-            onClick={() => setScanOpen(true)}
-          >
-            <ScanLineIcon />
-          </Button>
           {editor.value ? (
             <Button
               variant="ghost"
@@ -112,8 +111,35 @@ export function Editor({ initialData }: { initialData: string }) {
         <Controls editor={editor} itemClassName={styles.item} />
       </main>
 
-      <ScanSheet open={scanOpen} onOpenChange={setScanOpen} onRestyle={editor.setValue} />
-      <ActionBar editor={editor} fits={rendered.status !== "failed"} isTelegram={isTelegram} />
+      {mode === "scan" && (
+        <ScanView
+          scan={scan}
+          onRestyle={(text) => {
+            editor.setValue(text);
+            setMode("create");
+          }}
+        />
+      )}
+
+      <Dock
+        mode={mode}
+        onModeChange={(next) => {
+          setMode(next);
+          if (next !== "scan") return;
+          void scan.refreshHistory();
+          if (cameraAvailable()) void scan.fromCamera();
+        }}
+      >
+        {mode === "create" ? (
+          <CreateActions
+            editor={editor}
+            fits={rendered.status !== "failed"}
+            isTelegram={isTelegram}
+          />
+        ) : (
+          <ScanActions scan={scan} />
+        )}
+      </Dock>
     </>
   );
 }

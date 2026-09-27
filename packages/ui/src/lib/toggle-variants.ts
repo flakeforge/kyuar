@@ -8,6 +8,8 @@ export const toggleVariants = cva(
         default: "bg-transparent",
         outline: "border border-input bg-transparent hover:bg-muted",
         tile: "rounded-(--radius) border border-transparent bg-muted text-foreground hover:bg-accent aria-pressed:bg-popover aria-pressed:ring-2 aria-pressed:ring-foreground",
+        segment:
+          "rounded-full text-muted-foreground hover:bg-transparent aria-pressed:bg-popover aria-pressed:text-foreground aria-pressed:shadow-[0_2px_8px_-2px] aria-pressed:shadow-foreground/25",
         swatch:
           "rounded-full p-0 ring-offset-2 ring-offset-popover hover:bg-transparent aria-pressed:bg-transparent aria-pressed:ring-2 aria-pressed:ring-foreground",
       },

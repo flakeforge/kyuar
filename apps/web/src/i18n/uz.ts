@@ -110,7 +110,13 @@ export const uz: Messages = {
     unreadable: "Bu faylni rasm sifatida oʻqib boʻlmadi.",
     off: "Oʻchiq",
   },
+  modes: {
+    create: "Yaratish",
+    scan: "Skanerlash",
+    label: "Rejim",
+  },
   scan: {
+    emptyView: "Kamerani kodga qarating yoki rasm yoki skrinshot tanlang.",
     open: "Kodni skanerlash",
     title: "Kodni skanerlash",
     camera: "Kamera bilan",

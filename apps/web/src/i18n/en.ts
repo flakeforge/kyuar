@@ -103,7 +103,13 @@ export const en = {
     unreadable: "This file could not be read as an image.",
     off: "Off",
   },
+  modes: {
+    create: "Create",
+    scan: "Scan",
+    label: "Mode",
+  },
   scan: {
+    emptyView: "Point the camera at a code, or pick a photo or screenshot.",
     open: "Scan a code",
     title: "Scan a code",
     camera: "Use camera",

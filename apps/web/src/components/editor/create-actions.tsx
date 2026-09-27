@@ -13,7 +13,6 @@ import { useMessages } from "~/i18n";
 import { svgToPngBlob } from "~/lib/images";
 import { download, haptic, rawInitData, share } from "~/lib/telegram";
 
-import styles from "./editor.module.css";
 import type { EditorModel } from "./use-editor";
 
 const INIT_DATA_HEADER = "x-telegram-init-data";
@@ -45,13 +44,13 @@ function saveBlob(blob: Blob, fileName: string) {
   URL.revokeObjectURL(url);
 }
 
-interface ActionBarProps {
+interface CreateActionsProps {
   editor: EditorModel;
   fits: boolean;
   isTelegram: boolean;
 }
 
-export function ActionBar({ editor, fits, isTelegram }: ActionBarProps) {
+export function CreateActions({ editor, fits, isTelegram }: CreateActionsProps) {
   const t = useMessages();
   const [busy, setBusy] = useState<"download" | "share" | null>(null);
   const [formatsOpen, setFormatsOpen] = useState(false);
@@ -181,17 +180,13 @@ export function ActionBar({ editor, fits, isTelegram }: ActionBarProps) {
 
   return (
     <>
-      <nav
-        className={`${styles.bar} from-background via-background/80 pointer-events-none fixed inset-x-0 bottom-0 z-10 bg-linear-to-t to-transparent pt-8 pb-[max(env(safe-area-inset-bottom),1rem)]`}
-      >
-        <div className="pointer-events-auto mx-auto flex w-fit items-center gap-3">
-          <Button variant="float" size="fab" aria-label={t.actions.surprise} onClick={onSurprise}>
-            <ShuffleIcon />
-          </Button>
-          {isTelegram ? shareButton(true) : downloadButton(true)}
-          {isTelegram ? downloadButton(false) : shareButton(false)}
-        </div>
-      </nav>
+      <div className="mx-auto flex w-fit items-center gap-3">
+        <Button variant="float" size="fab" aria-label={t.actions.surprise} onClick={onSurprise}>
+          <ShuffleIcon />
+        </Button>
+        {isTelegram ? shareButton(true) : downloadButton(true)}
+        {isTelegram ? downloadButton(false) : shareButton(false)}
+      </div>
 
       <Drawer open={formatsOpen} onOpenChange={setFormatsOpen}>
         <DrawerContent>

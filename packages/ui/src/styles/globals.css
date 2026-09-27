@@ -78,8 +78,8 @@
   }
 
   html {
-    scroll-padding-bottom: 7rem;
-    --toast-inset-bottom: calc(max(env(safe-area-inset-bottom), 1rem) + 4.5rem);
+    scroll-padding-bottom: 10.5rem;
+    --toast-inset-bottom: calc(max(env(safe-area-inset-bottom), 0.75rem) + 8.25rem);
   }
 
   body {

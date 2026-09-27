@@ -18,7 +18,7 @@ export function ScanActions({ scan }: { scan: ScanModel }) {
   const withCamera = cameraAvailable();
 
   const photoIcon = scan.busy ? (
-    <Spinner data-icon="inline-start" />
+    <Spinner aria-label={t.scan.scanning} data-icon="inline-start" />
   ) : (
     <ImageIcon data-icon="inline-start" />
   );
@@ -46,7 +46,7 @@ export function ScanActions({ scan }: { scan: ScanModel }) {
             disabled={scan.busy}
             onClick={() => fileInput.current?.click()}
           >
-            {scan.busy ? <Spinner /> : <ImageIcon />}
+            {scan.busy ? <Spinner aria-label={t.scan.scanning} /> : <ImageIcon />}
           </Button>
           <Button size="xl" className={PILL} onClick={() => void scan.fromCamera()}>
             <CameraIcon data-icon="inline-start" />

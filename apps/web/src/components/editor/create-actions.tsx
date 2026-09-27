@@ -152,7 +152,7 @@ export function CreateActions({ editor, fits, isTelegram }: CreateActionsProps) 
       className={primary ? pillClassName : undefined}
     >
       {busy === "download" ? (
-        <Spinner data-icon={primary ? "inline-start" : undefined} />
+        <Spinner aria-label={t.actions.sharing} data-icon={primary ? "inline-start" : undefined} />
       ) : (
         <DownloadIcon data-icon={primary ? "inline-start" : undefined} />
       )}
@@ -170,7 +170,7 @@ export function CreateActions({ editor, fits, isTelegram }: CreateActionsProps) 
       className={primary ? pillClassName : undefined}
     >
       {busy === "share" ? (
-        <Spinner data-icon={primary ? "inline-start" : undefined} />
+        <Spinner aria-label={t.actions.sharing} data-icon={primary ? "inline-start" : undefined} />
       ) : (
         <SendIcon data-icon={primary ? "inline-start" : undefined} />
       )}

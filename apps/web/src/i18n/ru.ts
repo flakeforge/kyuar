@@ -84,6 +84,9 @@ export const ru: Messages = {
     tooLow: "Слишком низкий для чтения",
     customTab: "Свой",
     area: "Насыщенность и яркость",
+    areaValue: "Насыщенность {s}%, яркость {v}%",
+    stop: "Точка градиента",
+    swatch: "Цвет {hex}",
     eyedropper: "Взять цвет с экрана",
     format: "Формат цвета",
     value: "Значение цвета",
@@ -177,6 +180,7 @@ export const ru: Messages = {
     downloaded: "Сохранено",
     surprised: "Новый стиль",
     undo: "Отменить",
+    close: "Закрыть",
 
     downloadTitle: "Скачать как",
 

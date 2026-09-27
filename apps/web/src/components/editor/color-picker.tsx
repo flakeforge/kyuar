@@ -107,6 +107,9 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
     <div className="flex flex-col gap-4">
       <ColorArea
         aria-label={t.color.area}
+        aria-valuetext={t.color.areaValue
+          .replace("{s}", String(Math.round(hsv.s * 100)))
+          .replace("{v}", String(Math.round(hsv.v * 100)))}
         hue={hsv.h}
         saturation={hsv.s}
         value={hsv.v}

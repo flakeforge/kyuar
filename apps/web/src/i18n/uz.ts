@@ -85,6 +85,9 @@ export const uz: Messages = {
     tooLow: "Oʻqish uchun juda past",
     customTab: "Oʻzim tanlayman",
     area: "Toʻyinganlik va yorqinlik",
+    areaValue: "Toʻyinganlik {s}%, yorqinlik {v}%",
+    stop: "Gradient nuqtasi",
+    swatch: "Rang {hex}",
     eyedropper: "Ekrandan rang olish",
     format: "Rang formati",
     value: "Rang qiymati",
@@ -179,6 +182,7 @@ export const uz: Messages = {
     downloaded: "Saqlandi",
     surprised: "Yangi uslub",
     undo: "Qaytarish",
+    close: "Yopish",
 
     downloadTitle: "Qaysi formatda yuklash",
 

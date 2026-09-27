@@ -1,9 +1,9 @@
 import { resolveLocale } from "@kyuar/shared";
 import "@kyuar/ui/globals.css";
-import { Toaster } from "@kyuar/ui/components/toast";
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 
+import { AppToaster } from "~/components/app-toaster";
 import { MessagesProvider } from "~/i18n";
 
 export const metadata: Metadata = {
@@ -33,7 +33,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang={locale}>
       <body>
         <MessagesProvider locale={locale}>
-          <Toaster>{children}</Toaster>
+          <AppToaster>{children}</AppToaster>
         </MessagesProvider>
       </body>
     </html>

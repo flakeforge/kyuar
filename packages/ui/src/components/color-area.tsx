@@ -11,6 +11,7 @@ interface ColorAreaProps {
   onChangeEnd?: () => void;
   thumbColor: string;
   "aria-label": string;
+  "aria-valuetext"?: string;
   className?: string;
 }
 
@@ -34,6 +35,7 @@ function ColorArea({
   onChangeEnd,
   thumbColor,
   "aria-label": ariaLabel,
+  "aria-valuetext": valueText,
   className,
 }: ColorAreaProps) {
   const area = React.useRef<HTMLDivElement>(null);
@@ -71,7 +73,7 @@ function ColorArea({
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={Math.round(saturation * 100)}
-      aria-valuetext={`${Math.round(saturation * 100)}%, ${Math.round(value * 100)}%`}
+      aria-valuetext={valueText ?? `${Math.round(saturation * 100)}%, ${Math.round(value * 100)}%`}
       className={cn(
         "focus-visible:ring-ring/50 relative aspect-[8/5] w-full touch-none rounded-(--radius) outline-none select-none focus-visible:ring-3",
         className,

@@ -78,6 +78,9 @@ export const en = {
     tooLow: "Too low to scan",
     customTab: "Custom",
     area: "Saturation and brightness",
+    areaValue: "Saturation {s}%, brightness {v}%",
+    stop: "Gradient point",
+    swatch: "Color {hex}",
     eyedropper: "Pick a color from the screen",
     format: "Color format",
     value: "Color value",
@@ -171,6 +174,7 @@ export const en = {
     downloaded: "Saved",
     surprised: "New style",
     undo: "Undo",
+    close: "Close",
 
     downloadTitle: "Download as",
 

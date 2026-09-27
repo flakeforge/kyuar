@@ -238,6 +238,7 @@ export function ColorSheet({ editor }: { editor: EditorModel }) {
 
             {paint.type !== "solid" && (
               <ToggleGroup
+                aria-label={t.color.stop}
                 value={[activeStop]}
                 onValueChange={(next) => {
                   const [value] = next as Stop[];
@@ -303,7 +304,7 @@ export function ColorSheet({ editor }: { editor: EditorModel }) {
                 <ToggleGroupItem
                   key={swatch}
                   value={swatch}
-                  aria-label={swatch}
+                  aria-label={t.color.swatch.replace("{hex}", swatch)}
                   className="aspect-square h-auto w-full shadow-[inset_0_0_0_1px_rgb(0_0_0/0.08)]"
                   style={{ background: swatch }}
                 />

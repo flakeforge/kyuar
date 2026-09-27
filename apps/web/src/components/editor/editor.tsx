@@ -63,8 +63,10 @@ export function Editor({ initialData, initialMode }: { initialData: string; init
           </div>
         </header>
 
-        <ScanWarning rendered={rendered} margin={editor.style.margin} />
-        <div className={styles.item}>
+        <div className="contents" aria-live="polite">
+          <ScanWarning rendered={rendered} margin={editor.style.margin} />
+        </div>
+        <div className={styles.item} aria-live="polite">
           <ScanScore check={scanCheck} />
         </div>
 

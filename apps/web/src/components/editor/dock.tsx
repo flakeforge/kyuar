@@ -25,7 +25,7 @@ export function Dock({ mode, onModeChange, children }: DockProps) {
   const t = useMessages();
 
   return (
-    <nav
+    <div
       className={`${styles.bar} from-background via-background/90 pointer-events-none fixed inset-x-0 bottom-0 z-10 flex flex-col gap-3 bg-linear-to-t to-transparent px-4 pt-8 pb-[max(env(safe-area-inset-bottom),0.75rem)]`}
     >
       <div className="pointer-events-auto">{children}</div>
@@ -52,6 +52,6 @@ export function Dock({ mode, onModeChange, children }: DockProps) {
           {t.modes.scan}
         </ToggleGroupItem>
       </ToggleGroup>
-    </nav>
+    </div>
   );
 }

@@ -172,12 +172,14 @@ export function Controls({
             value={String(style.margin)}
             onChange={(value) => update({ margin: Number(value) })}
           />
-          {style.margin < 2 && (
-            <Alert variant="destructive">
-              <TriangleAlertIcon />
-              <AlertDescription>{t.preview.tightMargin}</AlertDescription>
-            </Alert>
-          )}
+          <div className="contents" aria-live="polite">
+            {style.margin < 2 && (
+              <Alert variant="destructive" role="presentation">
+                <TriangleAlertIcon />
+                <AlertDescription>{t.preview.tightMargin}</AlertDescription>
+              </Alert>
+            )}
+          </div>
         </div>
       </SheetRow>
 

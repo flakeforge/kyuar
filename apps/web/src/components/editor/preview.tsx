@@ -88,7 +88,7 @@ export function ScanWarning({ rendered, margin }: { rendered: QrRenderState; mar
   if (messages.length === 0) return null;
 
   return (
-    <Alert variant="destructive">
+    <Alert variant="destructive" role="presentation">
       <TriangleAlertIcon />
       <AlertDescription>{messages.join(" ")}</AlertDescription>
     </Alert>
@@ -111,7 +111,7 @@ export function ScanScore({ check }: { check: ScanCheck | undefined }) {
 
   if (check.passed < check.total / 2) {
     return (
-      <Alert variant="destructive" aria-live="polite">
+      <Alert variant="destructive" role="presentation">
         <TriangleAlertIcon />
         <AlertDescription>{text}</AlertDescription>
       </Alert>
@@ -119,10 +119,7 @@ export function ScanScore({ check }: { check: ScanCheck | undefined }) {
   }
 
   return (
-    <p
-      className="text-muted-foreground flex items-center justify-center gap-2 text-sm"
-      aria-live="polite"
-    >
+    <p className="text-muted-foreground flex items-center justify-center gap-2 text-sm">
       <ShieldCheckIcon className="size-4" aria-hidden="true" />
       <span className="sr-only">{t.preview.checkLabel}: </span>
       {text}

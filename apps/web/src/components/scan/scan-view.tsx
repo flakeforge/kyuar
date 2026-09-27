@@ -36,8 +36,12 @@ export function ScanView({ scan, onRestyle }: ScanViewProps) {
             <ChevronLeftIcon />
           </Button>
         )}
-        <h2 className="font-heading text-xl font-semibold">{t.scan.title}</h2>
+        <h1 className="font-heading text-xl font-semibold">{t.scan.title}</h1>
       </header>
+
+      <p className="sr-only" aria-live="polite">
+        {result ? `${t.scan.kinds[result.kind]}: ${result.raw.slice(0, 200)}` : ""}
+      </p>
 
       {result ? (
         <ScanResult content={result} onRestyle={onRestyle} />
@@ -50,7 +54,7 @@ export function ScanView({ scan, onRestyle }: ScanViewProps) {
 
           <section className="flex flex-col gap-2" aria-label={t.scan.history}>
             <div className="flex min-h-11 items-center justify-between">
-              <h3 className="text-sm font-medium">{t.scan.history}</h3>
+              <h2 className="text-sm font-medium">{t.scan.history}</h2>
               {history && history.length > 0 && (
                 <Button variant="ghost" size="lg" className="h-11" onClick={() => void clear()}>
                   {t.scan.clearHistory}

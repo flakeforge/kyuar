@@ -56,13 +56,26 @@ export function decodePixels(
   nextJob += 1;
   const id = nextJob;
   const target = getWorker();
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
+    const cleanup = () => {
+      target.removeEventListener("message", onMessage);
+      target.removeEventListener("error", onError);
+      target.removeEventListener("messageerror", onError);
+    };
     const onMessage = (event: MessageEvent<ScanJobResult>) => {
       if (event.data.id !== id) return;
-      target.removeEventListener("message", onMessage);
+      cleanup();
       resolve(event.data.text);
     };
+    const onError = () => {
+      cleanup();
+      target.terminate();
+      if (worker === target) worker = undefined;
+      reject(new Error("The scan worker failed"));
+    };
     target.addEventListener("message", onMessage);
+    target.addEventListener("error", onError);
+    target.addEventListener("messageerror", onError);
     target.postMessage({ id, image: { width, height, data } }, [data.buffer]);
   });
 }

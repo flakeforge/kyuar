@@ -19,7 +19,7 @@ import { Switch } from "@kyuar/ui/components/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@kyuar/ui/components/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@kyuar/ui/components/toggle-group";
 import { ChevronDownIcon } from "lucide-react";
-import { useState } from "react";
+import { useId, useState } from "react";
 
 import { useMessages, useThemeNames } from "~/i18n";
 import { single } from "~/lib/slider";
@@ -89,6 +89,7 @@ function convert(paint: Paint, type: Paint["type"]): Paint {
 export function ColorSheet({ editor }: { editor: EditorModel }) {
   const t = useMessages();
   const { style, update, themeId, applyTheme } = editor;
+  const darkId = useId();
   const [part, setPart] = useState<Part>("pixels");
   const [stop, setStop] = useState<Stop>("from");
   const [advanced, setAdvanced] = useState(false);
@@ -173,10 +174,14 @@ export function ColorSheet({ editor }: { editor: EditorModel }) {
           ))}
         </div>
 
-        <FieldLabel className="flex min-h-11 w-full items-center justify-between">
-          {t.color.darkBackground}
-          <Switch checked={dark} onCheckedChange={(checked) => setAuto(base, checked)} />
-        </FieldLabel>
+        <Field orientation="horizontal" className="min-h-11">
+          <FieldLabel htmlFor={darkId}>{t.color.darkBackground}</FieldLabel>
+          <Switch
+            id={darkId}
+            checked={dark}
+            onCheckedChange={(checked) => setAuto(base, checked)}
+          />
+        </Field>
 
         <Button
           variant="ghost"

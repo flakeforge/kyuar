@@ -41,7 +41,7 @@ function saveBlob(blob: Blob, fileName: string) {
   link.href = url;
   link.download = fileName;
   link.click();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 interface CreateActionsProps {

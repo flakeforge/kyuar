@@ -10,7 +10,7 @@ import { cameraAvailable } from "~/lib/scanner";
 
 import type { ScanModel } from "./use-scan";
 
-const PILL = "h-14 rounded-full px-7 shadow-[0_12px_28px_-12px] shadow-foreground/40";
+const PILL = "font-heading h-14 rounded-full px-7 shadow-[0_12px_28px_-12px] shadow-foreground/40";
 
 export function ScanActions({ scan }: { scan: ScanModel }) {
   const t = useMessages();

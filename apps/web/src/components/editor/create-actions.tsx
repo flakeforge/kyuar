@@ -140,7 +140,8 @@ export function CreateActions({ editor, fits, isTelegram }: CreateActionsProps) 
     });
   }
 
-  const pillClassName = "h-14 rounded-full px-7 shadow-[0_12px_28px_-12px] shadow-foreground/40";
+  const pillClassName =
+    "font-heading h-14 rounded-full px-7 shadow-[0_12px_28px_-12px] shadow-foreground/40";
 
   const downloadButton = (primary: boolean) => (
     <Button

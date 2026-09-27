@@ -10,9 +10,7 @@ export const uz: Messages = {
     tooLong:
       "Bitta QR kod uchun matn juda uzun. Qisqartiring yoki xatolarni tuzatish darajasini pasaytiring.",
     lowContrast: "Ranglar bir-biriga juda yaqin. Telefon bu kodni oʻqimasligi mumkin.",
-
     empty: "Kod yaratish uchun havola yoki matn yozing.",
-
     tightMargin: "Chekka 2 dan kichik boʻlsa, telefon kodni topmasligi mumkin.",
   },
   rows: {
@@ -70,8 +68,16 @@ export const uz: Messages = {
     hex: "Hex",
     scans: "Yaxshi oʻqiladi",
     tooLow: "Oʻqish uchun juda past",
-
     customTab: "Oʻzim tanlayman",
+    area: "Toʻyinganlik va yorqinlik",
+    eyedropper: "Ekrandan rang olish",
+    format: "Rang formati",
+    value: "Rang qiymati",
+    darkBackground: "Qorongʻi fon",
+    advanced: "Kengaytirilgan",
+    fewer: "Kamroq sozlama",
+    base: "Asosiy rang",
+    autoHint: "Qolgan ranglar shundan olinadi va kod doim oʻqiladi.",
   },
   image: {
     logoHint: "Markazga qoʻyiladi. Xatolarni tuzatish eng yuqori darajaga oʻtadi.",
@@ -93,11 +99,8 @@ export const uz: Messages = {
     downloadFailed: "Yuklab boʻlmadi. Qayta urinib koʻring.",
     shareFailed: "Ulashib boʻlmadi. Qayta urinib koʻring.",
     shareUnavailable: "Ulashish uchun kyuarʼni Telegramʼda oching.",
-
     downloaded: "Saqlandi",
-
     surprised: "Yangi uslub",
-
     undo: "Qaytarish",
   },
 };

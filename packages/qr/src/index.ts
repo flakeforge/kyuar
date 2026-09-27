@@ -24,4 +24,6 @@ export { THEMES, DEFAULT_THEME } from "./themes";
 export type { QrTheme } from "./themes";
 export { contrastRatio, MIN_SCAN_CONTRAST } from "./lib/contrast";
 export { hexToOklch, oklchToHex } from "./lib/oklch";
+export { derivePalette, applyPalette, PALETTE_TARGET_CONTRAST } from "./palette";
+export type { Palette } from "./palette";
 export type { Oklch } from "./lib/oklch";

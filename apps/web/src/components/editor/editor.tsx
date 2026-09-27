@@ -38,7 +38,7 @@ export function Editor({ initialData }: { initialData: string }) {
 
   return (
     <>
-      <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-3 px-4 pb-36">
+      <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-3 px-4 pb-36">
         <h1 className="sr-only">kyuar</h1>
         <header className={styles.header}>
           <div className={styles.backdrop} />

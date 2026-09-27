@@ -39,9 +39,9 @@ export function Preview({ rendered, isEmpty }: { rendered: RenderedQr | null; is
   const t = useMessages();
 
   return (
-    <figure className="shadow-foreground/45 aspect-square w-full overflow-hidden rounded-(--radius-card) shadow-[0_24px_48px_-28px]">
+    <figure className="aspect-square w-full">
       {rendered && isEmpty ? (
-        <div className="relative size-full">
+        <div className="relative size-full overflow-hidden rounded-(--radius-card)">
           <Image
             src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(rendered.svg)}`}
             alt=""
@@ -64,10 +64,10 @@ export function Preview({ rendered, isEmpty }: { rendered: RenderedQr | null; is
           unoptimized
           priority
           draggable={false}
-          className="size-full select-none"
+          className="size-full drop-shadow-[0_18px_22px_color-mix(in_oklab,var(--foreground)_22%,transparent)] select-none"
         />
       ) : (
-        <div className="bg-card text-card-foreground flex size-full items-center justify-center px-8 text-center text-sm">
+        <div className="bg-card text-card-foreground flex size-full items-center justify-center rounded-(--radius-card) px-8 text-center text-sm">
           {t.preview.tooLong}
         </div>
       )}

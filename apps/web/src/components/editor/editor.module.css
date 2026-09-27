@@ -52,7 +52,7 @@
       block
         calc(
           var(--tg-viewport-safe-area-inset-top, 0px) +
-            var(--tg-viewport-content-safe-area-inset-top, 0px) + 1.5rem + 0.66 *
+            var(--tg-viewport-content-safe-area-inset-top, 0px) + 1.5rem + 0.9 *
             min(100vw - 2rem, 26rem)
         )
         0px
@@ -78,12 +78,21 @@
 
 @keyframes shrink-code {
   to {
-    transform: scale(0.66);
+    transform: scale(0.9);
   }
 }
 
 @keyframes shrink-backdrop {
   to {
-    transform: scaleY(0.72);
+    transform: scaleY(0.91);
   }
+}
+
+.bar {
+  transition: opacity 160ms var(--ease-out-strong);
+}
+
+:global(body:has(input:focus)) .bar {
+  opacity: 0;
+  pointer-events: none;
 }

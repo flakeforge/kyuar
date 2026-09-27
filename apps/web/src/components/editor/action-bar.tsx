@@ -12,6 +12,7 @@ import { useMessages } from "~/i18n";
 import { svgToPngBlob } from "~/lib/images";
 import { download, haptic, rawInitData, share } from "~/lib/telegram";
 
+import styles from "./editor.module.css";
 import type { EditorModel } from "./use-editor";
 
 const INIT_DATA_HEADER = "x-telegram-init-data";
@@ -106,7 +107,9 @@ export function ActionBar({ editor }: { editor: EditorModel }) {
   }
 
   return (
-    <nav className="from-background via-background/80 pointer-events-none fixed inset-x-0 bottom-0 z-10 bg-linear-to-t to-transparent pt-8 pb-[max(env(safe-area-inset-bottom),1rem)]">
+    <nav
+      className={`${styles.bar} from-background via-background/80 pointer-events-none fixed inset-x-0 bottom-0 z-10 bg-linear-to-t to-transparent pt-8 pb-[max(env(safe-area-inset-bottom),1rem)]`}
+    >
       <div className="pointer-events-auto mx-auto flex w-fit items-center gap-4">
         <Button
           variant="float"

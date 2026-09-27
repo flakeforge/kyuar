@@ -22,6 +22,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  userScalable: false,
+  interactiveWidget: "overlays-content",
   viewportFit: "cover",
   themeColor: "#0B0B0C",
 };

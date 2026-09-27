@@ -231,7 +231,7 @@ export function renderQr(input: RenderInput): RenderedQr {
 
   const background = resolvePaint(style.background, `${id}-background`, fullBox);
   if (background.def) defs.push(background.def);
-  const radius = dimension * style.backgroundRadius * 0.12;
+  const radius = Math.min(dimension * style.backgroundRadius * 0.12, offset);
 
   const layers = [
     layer("data", style.data.paint, dataPath),

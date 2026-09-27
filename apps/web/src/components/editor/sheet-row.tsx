@@ -42,7 +42,7 @@ export function SheetRow({ label, value, preview, className, children }: SheetRo
           <DrawerHeader className="pb-2">
             <DrawerTitle>{label}</DrawerTitle>
           </DrawerHeader>
-          <div className="max-h-[max(16rem,calc(100dvh-26rem))] overflow-y-auto overscroll-contain px-4 pb-[max(env(safe-area-inset-bottom),1.25rem)]">
+          <div className="max-h-[max(16rem,calc(100svh-26rem))] overflow-y-auto overscroll-contain px-4 pb-[max(env(safe-area-inset-bottom),1.25rem)]">
             {children}
           </div>
         </div>

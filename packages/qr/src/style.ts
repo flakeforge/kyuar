@@ -43,11 +43,11 @@ export function solid(color: string): Paint {
 }
 
 export const DEFAULT_STYLE: QrStyle = {
-  ecc: "M",
+  ecc: "H",
   boostEcc: true,
   minVersion: 1,
   mask: null,
-  margin: 4,
+  margin: 2,
   background: solid(DEFAULT_BACKGROUND),
   backgroundRadius: 0.5,
   data: { shape: "fluid", paint: solid(DEFAULT_FOREGROUND) },

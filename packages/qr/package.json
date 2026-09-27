@@ -5,17 +5,18 @@
   "license": "AGPL-3.0-only",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./scan": "./src/scan.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@kyuar/qr-encoder": "workspace:*"
+    "@kyuar/qr-encoder": "workspace:*",
+    "qr": "0.7.0"
   },
   "devDependencies": {
     "@resvg/resvg-js": "^2.6.2",
-    "qr": "0.7.0",
     "typescript": "^5.9.3"
   }
 }

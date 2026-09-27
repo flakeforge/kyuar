@@ -140,13 +140,13 @@ importers:
       '@kyuar/qr-encoder':
         specifier: workspace:*
         version: link:../qr-encoder
+      qr:
+        specifier: 0.7.0
+        version: 0.7.0
     devDependencies:
       '@resvg/resvg-js':
         specifier: ^2.6.2
         version: 2.6.2
-      qr:
-        specifier: 0.7.0
-        version: 0.7.0
       typescript:
         specifier: ^5.9.3
         version: 5.9.3

@@ -24,3 +24,7 @@ export { LOCALES, DEFAULT_LOCALE, resolveLocale } from "./locale";
 export type { Locale } from "./locale";
 export { formatColor, parseColor, hexToHsv, hsvToHex } from "./color-format";
 export type { ColorFormat, Hsv } from "./color-format";
+export { parseScanned } from "./scanned";
+export type { ScannedContent } from "./scanned";
+export { checkLink } from "./link-safety";
+export type { LinkWarning } from "./link-safety";

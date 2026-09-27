@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 
 import { AppToaster } from "~/components/app-toaster";
 import { MessagesProvider } from "~/i18n";
+import { TELEGRAM_BOOT_SCRIPT } from "~/lib/telegram-boot";
 
 const display = Unbounded({
   subsets: ["latin", "latin-ext", "cyrillic"],
@@ -42,6 +43,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang={locale} className={`${display.variable} ${sans.variable}`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: TELEGRAM_BOOT_SCRIPT }} />
+      </head>
       <body>
         <MessagesProvider locale={locale}>
           <AppToaster>{children}</AppToaster>

@@ -38,8 +38,8 @@ async function enterFullscreen() {
   if (!viewport.mount.isAvailable()) return;
   await viewport.mount();
   viewport.bindCssVars.ifAvailable();
-  viewport.expand.ifAvailable();
-  if (viewport.requestFullscreen.isAvailable()) {
+  if (!viewport.isExpanded()) viewport.expand.ifAvailable();
+  if (viewport.requestFullscreen.isAvailable() && !viewport.isFullscreen()) {
     await viewport.requestFullscreen().catch(() => undefined);
   }
 }

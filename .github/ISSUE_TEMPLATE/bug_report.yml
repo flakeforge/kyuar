@@ -1,0 +1,44 @@
+name: Bug report
+description: Something does not work as it should
+labels: [bug]
+body:
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where
+      options:
+        - Mini App editor
+        - Mini App scanner
+        - Inline mode
+        - Private chat with the bot
+        - Group or guest mode
+        - Self-hosting
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected and what you got instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the editor
+        2. Pick the "Heart" pixel shape
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: client
+    attributes:
+      label: Telegram client and device
+      placeholder: Telegram for iOS 12.1, iPhone 15
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots or logs
+      description: Remove tokens, init data and personal information first.

@@ -22,6 +22,9 @@ Full guides for developers, administrators and users, in three languages:
 [English](docs/en/index.md) · [Oʻzbekcha](docs/uz/index.md) ·
 [Русский](docs/ru/index.md).
 
+Want to help? Read [CONTRIBUTING.md](CONTRIBUTING.md). Found a security
+problem? Follow [SECURITY.md](SECURITY.md) and report it privately.
+
 ## Surfaces
 
 | Surface      | How it works                                                                   |

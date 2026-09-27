@@ -16,6 +16,12 @@ QR codes that live inside Telegram. Generate one in any chat, in a private
 conversation with the bot, or in a full editor that opens as a Telegram Mini
 App.
 
+## Documentation
+
+Full guides for developers, administrators and users, in three languages:
+[English](docs/en/index.md) · [Oʻzbekcha](docs/uz/index.md) ·
+[Русский](docs/ru/index.md).
+
 ## Surfaces
 
 | Surface      | How it works                                                                   |
@@ -95,7 +101,8 @@ Run `just` to list every recipe. The ones you need most:
 
 ```sh
 just fix       # oxlint --fix, then oxfmt
-just check     # lint, format check, typecheck, react-doctor
+just check     # lint, format check, typecheck, react-doctor, knip
+just test      # unit tests
 just build     # production build
 ```
 
@@ -132,8 +139,6 @@ Put a reverse proxy cache in front of `/api/qr`. The route already sends
 ## Roadmap
 
 - Saved qr codes per user, backed by Postgres
-- Custom logo upload
-- QR scanner using `showScanQrPopup`
 
 ## Credits
 

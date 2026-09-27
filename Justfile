@@ -160,13 +160,13 @@ clean:
     rm -rf node_modules apps/*/node_modules packages/*/node_modules
     rm -rf apps/*/.next apps/*/dist packages/*/dist
 
-[arg('action', pattern='set|delete|info', help='set points it at NEXT_PUBLIC_APP_URL/api/bot')]
+[arg('action', pattern='set|delete|info', help='set points it at APP_URL/api/bot')]
 [doc('Manage the Telegram webhook')]
 [group('telegram')]
 webhook action="info":
     pnpm --filter @kyuar/bot webhook {{ action }}
 
-[doc('Point the Telegram webhook at NEXT_PUBLIC_APP_URL')]
+[doc('Point the Telegram webhook at APP_URL and publish the command menu')]
 [group('telegram')]
 webhook-set: (webhook "set")
 

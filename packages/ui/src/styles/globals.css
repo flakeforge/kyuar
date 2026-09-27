@@ -40,6 +40,8 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --color-scrim: var(--scrim);
+  --shadow-hairline: inset 0 0 0 1px var(--hairline);
 }
 
 :root {
@@ -64,6 +66,8 @@
   --border: color-mix(in oklab, var(--theme) 28%, white);
   --input: color-mix(in oklab, var(--theme) 45%, white);
   --ring: color-mix(in oklab, var(--theme) 30%, black);
+  --hairline: color-mix(in oklab, var(--foreground) 10%, transparent);
+  --scrim: color-mix(in oklab, var(--foreground) 12%, transparent);
   --radius: 1.125rem;
 }
 

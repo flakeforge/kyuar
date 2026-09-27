@@ -168,7 +168,7 @@ export function ColorSheet({ editor }: { editor: EditorModel }) {
           {(["background", "modules", "frames", "centers"] as const).map((key) => (
             <span
               key={key}
-              className="h-8 flex-1 rounded-lg shadow-[inset_0_0_0_1px_rgb(0_0_0/0.08)]"
+              className="shadow-hairline h-8 flex-1 rounded-lg"
               style={{ background: palette[key] }}
             />
           ))}
@@ -278,7 +278,7 @@ export function ColorSheet({ editor }: { editor: EditorModel }) {
 
             <div className="flex items-center gap-3">
               <span
-                className="size-11 shrink-0 rounded-(--radius) shadow-[inset_0_0_0_1px_rgb(0_0_0/0.08)]"
+                className="shadow-hairline size-11 shrink-0 rounded-(--radius)"
                 style={{ background: color }}
               />
               <span className="font-mono text-sm uppercase">{color}</span>
@@ -305,7 +305,7 @@ export function ColorSheet({ editor }: { editor: EditorModel }) {
                   key={swatch}
                   value={swatch}
                   aria-label={t.color.swatch.replace("{hex}", swatch)}
-                  className="aspect-square h-auto w-full shadow-[inset_0_0_0_1px_rgb(0_0_0/0.08)]"
+                  className="shadow-hairline aspect-square h-auto w-full"
                   style={{ background: swatch }}
                 />
               ))}

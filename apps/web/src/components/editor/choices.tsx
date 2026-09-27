@@ -72,15 +72,15 @@ export function ChoiceGrid<Value extends string>({
         spacing={2}
         className="grid w-full grid-cols-5 gap-2"
       >
-        <button
-          type="button"
+        <Button
+          variant="ghost"
           onClick={pickRandom}
           aria-label={t.options.random}
           title={t.options.random}
-          className="bg-muted text-muted-foreground hover:bg-accent focus-visible:ring-ring/50 flex aspect-square items-center justify-center rounded-(--radius) border border-dashed border-current/30 outline-none focus-visible:ring-3 active:scale-95"
+          className="bg-muted text-muted-foreground hover:bg-accent aspect-square h-auto rounded-(--radius) border-dashed border-current/30 active:scale-95"
         >
           <DicesIcon className="size-6" />
-        </button>
+        </Button>
         {visible.map((choice) => (
           <ToggleGroupItem
             key={choice.value}

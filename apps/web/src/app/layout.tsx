@@ -23,7 +23,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   interactiveWidget: "overlays-content",
   viewportFit: "cover",
-  themeColor: "#0B0B0C",
+  themeColor: "#f9f7fd",
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

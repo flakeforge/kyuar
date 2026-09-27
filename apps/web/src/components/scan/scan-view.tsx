@@ -69,16 +69,16 @@ export function ScanView({ scan, onRestyle }: ScanViewProps) {
                   const content = parseScanned(entry.text);
                   return (
                     <li key={`${entry.at}-${entry.text}`}>
-                      <button
-                        type="button"
+                      <Button
+                        variant="ghost"
                         onClick={() => setResult(content)}
-                        className="bg-card text-card-foreground focus-visible:ring-ring/50 flex min-h-14 w-full flex-col items-start justify-center rounded-(--radius) px-4 py-2 text-left outline-none focus-visible:ring-3"
+                        className="bg-card text-card-foreground hover:bg-accent h-auto min-h-14 w-full flex-col items-start justify-center gap-0 rounded-(--radius) px-4 py-2 text-left"
                       >
                         <span className="text-muted-foreground text-xs">
                           {t.scan.kinds[content.kind]}
                         </span>
                         <span className="w-full truncate text-sm font-medium">{entry.text}</span>
-                      </button>
+                      </Button>
                     </li>
                   );
                 })}

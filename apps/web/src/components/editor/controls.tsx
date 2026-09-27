@@ -67,7 +67,7 @@ function BorderPreview({ margin }: { margin: number }) {
 function Thumbnail({ src }: { src: string }) {
   return (
     <span
-      className="block size-8 rounded-lg bg-cover bg-center shadow-[inset_0_0_0_1px_rgb(0_0_0/0.08)]"
+      className="shadow-hairline block size-8 rounded-lg bg-cover bg-center"
       style={{ backgroundImage: `url(${src})` }}
     />
   );
@@ -151,7 +151,7 @@ export function Controls({
         value={themeLabel}
         preview={
           <span
-            className="block size-7 rounded-full shadow-[inset_0_0_0_1px_rgb(0_0_0/0.08)]"
+            className="shadow-hairline block size-7 rounded-full"
             style={{ background: `linear-gradient(135deg, ${background} 50%, ${ink} 50%)` }}
           />
         }

@@ -4,9 +4,10 @@ import { hexToOklch, oklchToHex } from "@kyuar/qr";
 import { Button } from "@kyuar/ui/components/button";
 import { Input } from "@kyuar/ui/components/input";
 import { Separator } from "@kyuar/ui/components/separator";
-import { ClipboardPasteIcon, XIcon } from "lucide-react";
-import { useEffect } from "react";
+import { ClipboardPasteIcon, ScanLineIcon, XIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
+import { ScanSheet } from "~/components/scan/scan-sheet";
 import { useMessages } from "~/i18n";
 import { setHeaderColor } from "~/lib/telegram";
 import { useTelegram } from "~/lib/use-telegram";
@@ -27,6 +28,7 @@ function pageBackground(theme: string) {
 export function Editor({ initialData }: { initialData: string }) {
   const t = useMessages();
   const isTelegram = useTelegram();
+  const [scanOpen, setScanOpen] = useState(false);
   const editor = useEditor(initialData);
   const rendered = useRendered(editor);
   const { themeColor, inkColor } = editor;
@@ -62,6 +64,15 @@ export function Editor({ initialData }: { initialData: string }) {
             spellCheck={false}
             className="bg-card text-card-foreground border-input h-14 rounded-(--radius) px-14 text-center text-base font-medium"
           />
+          <Button
+            variant="ghost"
+            size="icon-xl"
+            aria-label={t.scan.open}
+            className="text-muted-foreground absolute top-1 left-1"
+            onClick={() => setScanOpen(true)}
+          >
+            <ScanLineIcon />
+          </Button>
           {editor.value ? (
             <Button
               variant="ghost"
@@ -93,6 +104,7 @@ export function Editor({ initialData }: { initialData: string }) {
         <Controls editor={editor} itemClassName={styles.item} />
       </main>
 
+      <ScanSheet open={scanOpen} onOpenChange={setScanOpen} onRestyle={editor.setValue} />
       <ActionBar editor={editor} fits={rendered.status !== "failed"} isTelegram={isTelegram} />
     </>
   );

@@ -35,8 +35,8 @@ export interface QrStyle {
   logo: { ratio: number };
 }
 
-export const DEFAULT_FOREGROUND = "#ffffff";
-export const DEFAULT_BACKGROUND = "#2547ff";
+export const DEFAULT_FOREGROUND = "#2b1d45";
+export const DEFAULT_BACKGROUND = "#cdbcec";
 
 export function solid(color: string): Paint {
   return { type: "solid", color };

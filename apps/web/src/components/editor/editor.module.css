@@ -1,0 +1,62 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin-inline: -1rem;
+  padding-inline: 1rem;
+  padding-top: calc(
+    var(--tg-viewport-safe-area-inset-top, 0px) +
+      var(--tg-viewport-content-safe-area-inset-top, 0px) + 1rem
+  );
+  padding-bottom: 1rem;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0 0 -1.5rem;
+  background: linear-gradient(
+    to bottom,
+    var(--background) calc(100% - 1.5rem),
+    color-mix(in oklab, var(--background) 0%, transparent)
+  );
+  transform-origin: top;
+  pointer-events: none;
+}
+
+.code {
+  position: relative;
+  transform-origin: top center;
+}
+
+@supports (animation-timeline: scroll()) {
+  .code {
+    animation: shrink-code linear both;
+    animation-timeline: scroll(root block);
+    animation-range: 0 16rem;
+  }
+
+  .backdrop {
+    animation: shrink-backdrop linear both;
+    animation-timeline: scroll(root block);
+    animation-range: 0 16rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .code,
+  .backdrop {
+    animation: none;
+  }
+}
+
+@keyframes shrink-code {
+  to {
+    transform: scale(0.66);
+  }
+}
+
+@keyframes shrink-backdrop {
+  to {
+    transform: scaleY(0.72);
+  }
+}

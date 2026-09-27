@@ -5,7 +5,7 @@ import { buildQrUrl, qrRequestSchema } from "@kyuar/shared";
 import { Button } from "@kyuar/ui/components/button";
 import { Spinner } from "@kyuar/ui/components/spinner";
 import { toast } from "@kyuar/ui/lib/toast";
-import { DownloadIcon, SendIcon, ShuffleIcon } from "lucide-react";
+import { DownloadIcon, ShareIcon, ShuffleIcon } from "lucide-react";
 import { useState } from "react";
 
 import { useMessages } from "~/i18n";
@@ -104,11 +104,11 @@ export function ActionBar({ editor, isTelegram }: { editor: EditorModel; isTeleg
   }
 
   return (
-    <nav className="bg-background/90 fixed inset-x-0 bottom-0 z-10 border-t pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur-md">
-      <div className="mx-auto flex w-full max-w-md items-center gap-2 px-4 pt-3">
+    <nav className="from-background via-background/80 pointer-events-none fixed inset-x-0 bottom-0 z-10 bg-linear-to-t to-transparent pt-8 pb-[max(env(safe-area-inset-bottom),1rem)]">
+      <div className="pointer-events-auto mx-auto flex w-fit items-center gap-4">
         <Button
-          variant="outline"
-          size="icon-xl"
+          variant="float"
+          size="fab"
           aria-label={t.actions.download}
           disabled={!fits || busy !== null}
           onClick={() => void onDownload()}
@@ -116,9 +116,9 @@ export function ActionBar({ editor, isTelegram }: { editor: EditorModel; isTeleg
           {busy === "download" ? <Spinner /> : <DownloadIcon />}
         </Button>
         <Button
-          variant="secondary"
-          size="icon-xl"
+          size="pill"
           aria-label={t.actions.surprise}
+          className="shadow-foreground/40 shadow-[0_12px_28px_-12px]"
           onClick={() => {
             surprise();
             haptic("impact");
@@ -127,17 +127,13 @@ export function ActionBar({ editor, isTelegram }: { editor: EditorModel; isTeleg
           <ShuffleIcon />
         </Button>
         <Button
-          size="xl"
-          className="flex-1"
+          variant="float"
+          size="fab"
+          aria-label={busy === "share" ? t.actions.sharing : t.actions.share}
           disabled={!fits || busy !== null || !isTelegram}
           onClick={() => void onShare()}
         >
-          {busy === "share" ? (
-            <Spinner data-icon="inline-start" />
-          ) : (
-            <SendIcon data-icon="inline-start" />
-          )}
-          {busy === "share" ? t.actions.sharing : t.actions.share}
+          {busy === "share" ? <Spinner /> : <ShareIcon />}
         </Button>
       </div>
     </nav>

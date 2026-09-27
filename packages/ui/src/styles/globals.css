@@ -43,23 +43,23 @@
 }
 
 :root {
-  --theme: #2547ff;
-  --theme-ink: #ffffff;
+  --theme: #cdbcec;
+  --theme-ink: #2b1d45;
 
   --background: color-mix(in oklab, var(--theme) 12%, white);
-  --foreground: color-mix(in oklab, var(--theme) 72%, black);
+  --foreground: color-mix(in oklab, var(--theme) 30%, black);
   --card: color-mix(in oklab, var(--theme) 22%, white);
-  --card-foreground: color-mix(in oklab, var(--theme) 78%, black);
+  --card-foreground: color-mix(in oklab, var(--theme) 30%, black);
   --popover: color-mix(in oklab, var(--theme) 6%, white);
-  --popover-foreground: color-mix(in oklab, var(--theme) 78%, black);
+  --popover-foreground: color-mix(in oklab, var(--theme) 30%, black);
   --primary: var(--theme);
   --primary-foreground: var(--theme-ink);
   --secondary: color-mix(in oklab, var(--theme) 22%, white);
-  --secondary-foreground: color-mix(in oklab, var(--theme) 78%, black);
+  --secondary-foreground: color-mix(in oklab, var(--theme) 30%, black);
   --muted: color-mix(in oklab, var(--theme) 18%, white);
-  --muted-foreground: color-mix(in oklab, var(--theme) 60%, black);
+  --muted-foreground: color-mix(in oklab, var(--theme) 48%, black);
   --accent: color-mix(in oklab, var(--theme) 30%, white);
-  --accent-foreground: color-mix(in oklab, var(--theme) 78%, black);
+  --accent-foreground: color-mix(in oklab, var(--theme) 30%, black);
   --destructive: oklch(0.577 0.245 27.325);
   --border: color-mix(in oklab, var(--theme) 28%, white);
   --input: color-mix(in oklab, var(--theme) 28%, white);

@@ -23,3 +23,5 @@ export type { GrayImage, HalftoneOptions } from "./halftone";
 export { THEMES, DEFAULT_THEME } from "./themes";
 export type { QrTheme } from "./themes";
 export { contrastRatio, MIN_SCAN_CONTRAST } from "./lib/contrast";
+export { hexToOklch, oklchToHex } from "./lib/oklch";
+export type { Oklch } from "./lib/oklch";

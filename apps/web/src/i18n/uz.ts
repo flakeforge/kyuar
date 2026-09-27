@@ -180,8 +180,6 @@ export const uz: Messages = {
     shareFailed: "Ulashib boʻlmadi. Qayta urinib koʻring.",
     shareUnavailable: "Ulashish uchun kyuarʼni Telegramʼda oching.",
     downloaded: "Saqlandi",
-    surprised: "Yangi uslub",
-    undo: "Qaytarish",
     close: "Yopish",
 
     downloadTitle: "Qaysi formatda yuklash",

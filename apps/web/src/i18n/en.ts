@@ -172,8 +172,6 @@ export const en = {
     shareFailed: "Could not share. Try again.",
     shareUnavailable: "Open kyuar in Telegram to share.",
     downloaded: "Saved",
-    surprised: "New style",
-    undo: "Undo",
     close: "Close",
 
     downloadTitle: "Download as",

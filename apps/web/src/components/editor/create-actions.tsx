@@ -125,19 +125,8 @@ export function CreateActions({ editor, fits, isTelegram }: CreateActionsProps) 
   }
 
   function onSurprise() {
-    const undo = surprise();
+    surprise();
     haptic("impact");
-    const id = toast.add({
-      title: t.actions.surprised,
-      timeout: 4000,
-      actionProps: {
-        children: t.actions.undo,
-        onClick: () => {
-          undo();
-          toast.close(id);
-        },
-      },
-    });
   }
 
   const pillClassName =

@@ -74,8 +74,7 @@ export function useEditor(initialData: string) {
     setThemeId(theme.id);
   }, []);
 
-  const surprise = useCallback((): (() => void) => {
-    const previous = { style, themeId };
+  const surprise = useCallback(() => {
     const theme = pick(THEMES.filter((item) => item.id !== themeId));
     setStyle((current) => {
       const colored = withColors(current, theme.foreground, theme.background);
@@ -88,11 +87,7 @@ export function useEditor(initialData: string) {
       };
     });
     setThemeId(theme.id);
-    return () => {
-      setStyle(previous.style);
-      setThemeId(previous.themeId);
-    };
-  }, [style, themeId]);
+  }, [themeId]);
 
   const request = useMemo<RenderRequest>(
     () => ({

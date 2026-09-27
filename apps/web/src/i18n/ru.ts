@@ -178,8 +178,6 @@ export const ru: Messages = {
     shareFailed: "Не удалось поделиться. Попробуйте ещё раз.",
     shareUnavailable: "Откройте kyuar в Telegram, чтобы поделиться.",
     downloaded: "Сохранено",
-    surprised: "Новый стиль",
-    undo: "Отменить",
     close: "Закрыть",
 
     downloadTitle: "Скачать как",

@@ -1,7 +1,6 @@
 "use client";
 
-import { contrastRatio, hexToOklch, MIN_SCAN_CONTRAST, oklchToHex, type Oklch } from "@kyuar/qr";
-import { Badge } from "@kyuar/ui/components/badge";
+import { hexToOklch, oklchToHex, type Oklch } from "@kyuar/qr";
 import { ColorSlider } from "@kyuar/ui/components/color-slider";
 import { Field, FieldLabel } from "@kyuar/ui/components/field";
 import { Input } from "@kyuar/ui/components/input";
@@ -21,15 +20,13 @@ function gradient(make: (t: number) => Oklch) {
 interface OklchPickerProps {
   value: string;
   onChange: (hex: string) => void;
-  against: string;
 }
 
 /**
  * Color picker on the OKLCH axes: equal slider steps look like equal color
- * steps, and moving lightness never shifts the hue. Shows the contrast
- * against the paired color so the user sees when a code stops scanning.
+ * steps, and moving lightness never shifts the hue.
  */
-export function OklchPicker({ value, onChange, against }: OklchPickerProps) {
+export function OklchPicker({ value, onChange }: OklchPickerProps) {
   const t = useMessages();
   const hexId = useId();
   const [color, setColor] = useState<Oklch>(() => hexToOklch(value));
@@ -61,8 +58,6 @@ export function OklchPicker({ value, onChange, against }: OklchPickerProps) {
     onChange(hex);
   };
 
-  const ratio = contrastRatio(value, against);
-  const scans = ratio >= MIN_SCAN_CONTRAST;
   const vivid = Math.max(color.c, 0.12);
 
   return (
@@ -110,27 +105,22 @@ export function OklchPicker({ value, onChange, against }: OklchPickerProps) {
           thumbColor={value}
         />
       </Field>
-      <div className="flex items-end gap-3">
-        <Field className="flex-1">
-          <FieldLabel htmlFor={hexId}>{t.color.hex}</FieldLabel>
-          <Input
-            id={hexId}
-            value={draft}
-            onChange={(event) => setDraft(event.target.value)}
-            onBlur={commitDraft}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") commitDraft();
-            }}
-            autoCapitalize="none"
-            autoComplete="off"
-            spellCheck={false}
-            className="h-11 font-mono uppercase"
-          />
-        </Field>
-        <Badge variant={scans ? "secondary" : "destructive"} className="mb-2.5 tabular-nums">
-          {ratio.toFixed(1)}:1 · {scans ? t.color.scans : t.color.tooLow}
-        </Badge>
-      </div>
+      <Field>
+        <FieldLabel htmlFor={hexId}>{t.color.hex}</FieldLabel>
+        <Input
+          id={hexId}
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          onBlur={commitDraft}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") commitDraft();
+          }}
+          autoCapitalize="none"
+          autoComplete="off"
+          spellCheck={false}
+          className="h-11 font-mono uppercase"
+        />
+      </Field>
     </div>
   );
 }

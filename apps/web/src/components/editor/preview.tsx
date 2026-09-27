@@ -35,12 +35,27 @@ export function useRendered(editor: EditorModel): RenderedQr | null {
   }, [content.value, fits, halftone, logo, style]);
 }
 
-export function Preview({ rendered }: { rendered: RenderedQr | null }) {
+export function Preview({ rendered, isEmpty }: { rendered: RenderedQr | null; isEmpty: boolean }) {
   const t = useMessages();
 
   return (
     <figure className="shadow-foreground/45 aspect-square w-full overflow-hidden rounded-(--radius-card) shadow-[0_24px_48px_-28px]">
-      {rendered ? (
+      {rendered && isEmpty ? (
+        <div className="relative size-full">
+          <Image
+            src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(rendered.svg)}`}
+            alt=""
+            width={rendered.size}
+            height={rendered.size}
+            unoptimized
+            draggable={false}
+            className="size-full opacity-25 blur-[2px] select-none"
+          />
+          <p className="text-foreground absolute inset-0 flex items-center justify-center px-10 text-center text-base font-medium text-balance">
+            {t.preview.empty}
+          </p>
+        </div>
+      ) : rendered ? (
         <Image
           src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(rendered.svg)}`}
           alt=""
@@ -61,14 +76,19 @@ export function Preview({ rendered }: { rendered: RenderedQr | null }) {
   );
 }
 
-export function ScanWarning({ rendered }: { rendered: RenderedQr | null }) {
+export function ScanWarning({ rendered, margin }: { rendered: RenderedQr | null; margin: number }) {
   const t = useMessages();
-  if (!rendered || rendered.warnings.length === 0) return null;
+  const messages = [
+    rendered && rendered.warnings.length > 0 ? t.preview.lowContrast : null,
+    margin < 2 ? t.preview.tightMargin : null,
+  ].filter((message): message is string => message !== null);
+
+  if (messages.length === 0) return null;
 
   return (
     <Alert variant="destructive">
       <TriangleAlertIcon />
-      <AlertDescription>{t.preview.lowContrast}</AlertDescription>
+      <AlertDescription>{messages.join(" ")}</AlertDescription>
     </Alert>
   );
 }

@@ -90,13 +90,27 @@ function DrawerSwipeHandle({ className, ...props }: React.ComponentProps<"div">)
   );
 }
 
-function DrawerContent({ className, children, ...props }: DrawerPrimitive.Popup.Props) {
+function DrawerContent({
+  className,
+  children,
+  backdrop = "dim",
+  ...props
+}: DrawerPrimitive.Popup.Props & { backdrop?: "dim" | "clear" }) {
   const { hasSnapPoints, modal, showSwipeHandle, swipeDirection } = useDrawer();
   const swipeAxis = swipeDirection === "down" || swipeDirection === "up" ? "y" : "x";
 
   return (
     <DrawerPortal data-slot="drawer-portal">
-      {modal === true && <DrawerOverlay data-snap-points={hasSnapPoints ? "" : undefined} />}
+      {modal === true && (
+        <DrawerOverlay
+          data-snap-points={hasSnapPoints ? "" : undefined}
+          className={
+            backdrop === "clear"
+              ? "bg-transparent supports-backdrop-filter:backdrop-blur-none"
+              : undefined
+          }
+        />
+      )}
       <DrawerPrimitive.Viewport
         data-slot="drawer-viewport"
         data-modal={modal}

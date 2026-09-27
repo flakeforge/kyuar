@@ -1,7 +1,7 @@
 "use client";
 
 import { ToggleGroup, ToggleGroupItem } from "@kyuar/ui/components/toggle-group";
-import { ShuffleIcon } from "lucide-react";
+import { CheckIcon, ShuffleIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { useMessages } from "~/i18n";
@@ -11,6 +11,7 @@ export interface Choice<Value extends string> {
   value: Value;
   label: string;
   icon?: ReactNode;
+  disabled?: boolean;
 }
 
 interface ChoicesProps<Value extends string> {
@@ -101,8 +102,14 @@ export function ChoiceList<Value extends string>({
       className="w-full"
     >
       {choices.map((choice) => (
-        <ToggleGroupItem key={choice.value} value={choice.value}>
-          <span>{choice.label}</span>
+        <ToggleGroupItem key={choice.value} value={choice.value} disabled={choice.disabled}>
+          <span className="flex items-center gap-2">
+            <CheckIcon
+              className="invisible size-4 group-aria-pressed/toggle:visible"
+              aria-hidden="true"
+            />
+            {choice.label}
+          </span>
           {choice.icon && (
             <span className="flex size-8 items-center justify-center" aria-hidden="true">
               {choice.icon}

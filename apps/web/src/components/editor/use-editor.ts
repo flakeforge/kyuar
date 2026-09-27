@@ -2,6 +2,7 @@
 
 import {
   canEncode,
+  hexToOklch,
   DEFAULT_STYLE,
   DEFAULT_THEME,
   paintColors,
@@ -28,6 +29,8 @@ const SURPRISE_DOTS: DotShape[] = ["fluid", "dot", "classy-rounded", "blobs", "s
 const SURPRISE_OUTER: FinderOuterShape[] = ["dot", "extra-rounded", "classy", "inpoint", "rounded"];
 const SURPRISE_INNER: FinderInnerShape[] = ["dot", "extra-rounded", "classy", "square", "diamond"];
 
+const NEUTRAL_CHROMA = 0.03;
+
 function pick<T>(items: readonly T[]): T {
   return items[Math.floor(Math.random() * items.length)] as T;
 }
@@ -41,7 +44,8 @@ export function useEditor(initialData: string) {
   const [logo, setLogo] = useState<string | null>(null);
   const [halftone, setHalftone] = useState<HalftoneState | null>(null);
 
-  const content = classifyContent(value || "kyuar.app");
+  const isEmpty = value.trim() === "";
+  const content = classifyContent(isEmpty ? "kyuar.app" : value);
   const effectiveStyle = useMemo<QrStyle>(
     () =>
       logo
@@ -64,7 +68,8 @@ export function useEditor(initialData: string) {
     setThemeId(theme.id);
   }, []);
 
-  const surprise = useCallback(() => {
+  const surprise = useCallback((): (() => void) => {
+    const previous = { style, themeId };
     const theme = pick(THEMES.filter((item) => item.id !== themeId));
     setStyle((current) => {
       const colored = withColors(current, theme.foreground, theme.background);
@@ -76,7 +81,11 @@ export function useEditor(initialData: string) {
       };
     });
     setThemeId(theme.id);
-  }, [themeId]);
+    return () => {
+      setStyle(previous.style);
+      setThemeId(previous.themeId);
+    };
+  }, [style, themeId]);
 
   const request = useMemo<RenderRequest>(
     () => ({
@@ -94,12 +103,17 @@ export function useEditor(initialData: string) {
     [content.value, effectiveStyle, halftone, logo],
   );
 
-  const [themeColor = DEFAULT_THEME.background] = paintColors(style.background);
-  const [inkColor = DEFAULT_THEME.foreground] = paintColors(style.data.paint);
+  const [background = DEFAULT_THEME.background] = paintColors(style.background);
+  const [ink = DEFAULT_THEME.foreground] = paintColors(style.data.paint);
+  const neutralBackground = hexToOklch(background).c < NEUTRAL_CHROMA;
+  const tintFromInk = neutralBackground && hexToOklch(ink).c > hexToOklch(background).c;
+  const themeColor = tintFromInk ? ink : background;
+  const inkColor = tintFromInk ? background : ink;
 
   return {
     value,
     setValue,
+    isEmpty,
     content,
     style: effectiveStyle,
     update,

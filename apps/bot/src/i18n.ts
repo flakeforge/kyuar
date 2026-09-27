@@ -45,7 +45,7 @@ const MESSAGES: Record<Locale, BotMessages> = {
     ].join("\n"),
     help: (username) =>
       [
-        "kyuar’dan qanday foydalanish:",
+        "kyuarʼdan qanday foydalanish:",
         "",
         "1. Shu yerga matn yuboring va QR kod oling.",
         "2. Rang, uslub va yuklab olish uchun «Editorni ochish» tugmasini bosing.",
@@ -53,8 +53,8 @@ const MESSAGES: Record<Locale, BotMessages> = {
       ].join("\n"),
     tooLong: "Bitta QR kod uchun matn juda uzun. Qisqaroq narsa yuboring, masalan havola.",
     openEditor: "Editorni ochish",
-    editInKyuar: "kyuar’da tahrirlash",
-    makeYourOwn: "O‘zingiznikini yarating",
+    editInKyuar: "kyuarʼda tahrirlash",
+    makeYourOwn: "Oʻzingiznikini yarating",
     openEditorInline: "kyuar editorini ochish",
     shareTitle: "QR kod",
   },

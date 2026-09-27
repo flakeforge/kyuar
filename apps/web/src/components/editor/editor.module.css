@@ -2,6 +2,7 @@
   position: sticky;
   top: 0;
   z-index: 5;
+  pointer-events: none;
   margin-inline: -1rem;
   padding-inline: 1rem;
   padding-top: calc(
@@ -26,6 +27,7 @@
 .code {
   position: relative;
   transform-origin: top center;
+  pointer-events: auto;
 }
 
 @supports (animation-timeline: scroll()) {
@@ -42,10 +44,35 @@
   }
 }
 
+@supports (animation-timeline: view()) {
+  .item {
+    transform-origin: top center;
+    animation: tuck-away linear both;
+    animation-timeline: view(
+      block
+        calc(
+          var(--tg-viewport-safe-area-inset-top, 0px) +
+            var(--tg-viewport-content-safe-area-inset-top, 0px) + 1.5rem + 0.66 *
+            min(100vw - 2rem, 26rem)
+        )
+        0px
+    );
+    animation-range: exit-crossing 0% exit-crossing 100%;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .code,
-  .backdrop {
+  .backdrop,
+  .item {
     animation: none;
+  }
+}
+
+@keyframes tuck-away {
+  to {
+    transform: translateY(100%) scale(0.9);
+    opacity: 0;
   }
 }
 

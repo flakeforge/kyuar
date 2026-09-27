@@ -1,9 +1,17 @@
 "use client";
 
-import { paintColors, solid, THEMES, type Paint, type QrStyle } from "@kyuar/qr";
-import { FieldLegend, FieldSet } from "@kyuar/ui/components/field";
-import { Separator } from "@kyuar/ui/components/separator";
+import {
+  contrastRatio,
+  MIN_SCAN_CONTRAST,
+  paintColors,
+  solid,
+  THEMES,
+  type Paint,
+  type QrStyle,
+} from "@kyuar/qr";
+import { Badge } from "@kyuar/ui/components/badge";
 import { Slider } from "@kyuar/ui/components/slider";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@kyuar/ui/components/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@kyuar/ui/components/toggle-group";
 import { useState } from "react";
 
@@ -19,7 +27,13 @@ type Stop = "from" | "to";
 
 const PARTS: Part[] = ["background", "pixels", "eyes", "pupils", "markers", "timing"];
 
-const SWATCHES = [...new Set(THEMES.flatMap((theme) => [theme.background, theme.foreground]))];
+const DISTINCT_CONTRAST = 1.15;
+
+const SWATCHES: string[] = [];
+for (const color of THEMES.flatMap((theme) => [theme.background, theme.foreground])) {
+  if (!SWATCHES.some((kept) => contrastRatio(kept, color) < DISTINCT_CONTRAST))
+    SWATCHES.push(color);
+}
 
 function readPaint(style: QrStyle, part: Part): Paint {
   if (part === "background") return style.background;
@@ -78,13 +92,19 @@ export function ColorSheet({ editor }: { editor: EditorModel }) {
     part === "background"
       ? stopColor(style.data.paint, "from")
       : stopColor(style.background, "from");
+  const ratio = contrastRatio(color, against);
+  const scans = ratio >= MIN_SCAN_CONTRAST;
 
   const setPaint = (next: Paint) => update(writePaint(style, part, next), false);
 
   return (
-    <div className="flex flex-col gap-6">
-      <FieldSet>
-        <FieldLegend variant="label">{t.color.themes}</FieldLegend>
+    <Tabs defaultValue={themeId ? "themes" : "custom"}>
+      <TabsList className="mb-5 w-full">
+        <TabsTrigger value="themes">{t.color.themes}</TabsTrigger>
+        <TabsTrigger value="custom">{t.color.customTab}</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="themes">
         <ToggleGroup
           aria-label={t.color.themes}
           value={themeId ? [themeId] : []}
@@ -96,7 +116,7 @@ export function ColorSheet({ editor }: { editor: EditorModel }) {
           }}
           variant="swatch"
           spacing={2}
-          className="grid w-full grid-cols-6 gap-3"
+          className="grid w-full grid-cols-4 gap-4"
         >
           {THEMES.map((theme) => (
             <ToggleGroupItem
@@ -111,12 +131,9 @@ export function ColorSheet({ editor }: { editor: EditorModel }) {
             />
           ))}
         </ToggleGroup>
-      </FieldSet>
+      </TabsContent>
 
-      <Separator />
-
-      <FieldSet>
-        <FieldLegend variant="label">{t.color.element}</FieldLegend>
+      <TabsContent value="custom" className="flex flex-col gap-5">
         <ToggleGroup
           aria-label={t.color.element}
           value={[part]}
@@ -125,11 +142,11 @@ export function ColorSheet({ editor }: { editor: EditorModel }) {
             if (value) setPart(value);
           }}
           variant="tile"
-          size="sm"
+          size="touch"
           className="flex w-full flex-wrap"
         >
           {PARTS.map((item) => (
-            <ToggleGroupItem key={item} value={item} className="shrink-0 px-3">
+            <ToggleGroupItem key={item} value={item}>
               {t.color[item]}
             </ToggleGroupItem>
           ))}
@@ -142,7 +159,7 @@ export function ColorSheet({ editor }: { editor: EditorModel }) {
             if (type) setPaint(convert(paint, type));
           }}
           variant="outline"
-          size="sm"
+          size="touch"
           className="w-full"
         >
           <ToggleGroupItem value="solid" className="flex-1">
@@ -164,7 +181,7 @@ export function ColorSheet({ editor }: { editor: EditorModel }) {
               if (value) setStop(value);
             }}
             variant="tile"
-            size="sm"
+            size="touch"
             className="w-full"
           >
             <ToggleGroupItem value="from" className="flex-1 gap-2">
@@ -194,10 +211,18 @@ export function ColorSheet({ editor }: { editor: EditorModel }) {
             onValueChange={(value) => setPaint({ ...paint, angle: single(value) })}
           />
         )}
-      </FieldSet>
 
-      <FieldSet>
-        <FieldLegend variant="label">{t.color.swatches}</FieldLegend>
+        <div className="flex items-center gap-3">
+          <span
+            className="size-11 shrink-0 rounded-(--radius) shadow-[inset_0_0_0_1px_rgb(0_0_0/0.08)]"
+            style={{ background: color }}
+          />
+          <span className="font-mono text-sm uppercase">{color}</span>
+          <Badge variant={scans ? "secondary" : "destructive"} className="ml-auto tabular-nums">
+            {ratio.toFixed(1)}:1 · {scans ? t.color.scans : t.color.tooLow}
+          </Badge>
+        </div>
+
         <ToggleGroup
           aria-label={t.color.swatches}
           value={[color]}
@@ -209,7 +234,7 @@ export function ColorSheet({ editor }: { editor: EditorModel }) {
           }}
           variant="swatch"
           spacing={2}
-          className="grid w-full grid-cols-8 gap-2.5"
+          className="grid w-full grid-cols-7 gap-3"
         >
           {SWATCHES.map((swatch) => (
             <ToggleGroupItem
@@ -221,17 +246,13 @@ export function ColorSheet({ editor }: { editor: EditorModel }) {
             />
           ))}
         </ToggleGroup>
-      </FieldSet>
 
-      <FieldSet>
-        <FieldLegend variant="label">{t.color.custom}</FieldLegend>
         <OklchPicker
           key={`${part}-${activeStop}`}
           value={color}
-          against={against}
           onChange={(hex) => setPaint(withStop(paint, activeStop, hex))}
         />
-      </FieldSet>
-    </div>
+      </TabsContent>
+    </Tabs>
   );
 }

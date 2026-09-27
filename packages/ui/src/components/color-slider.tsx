@@ -23,6 +23,7 @@ function ColorSlider({
   onValueChange,
   track,
   thumbColor,
+  "aria-label": ariaLabel,
   ...props
 }: ColorSliderProps) {
   return (
@@ -40,6 +41,7 @@ function ColorSlider({
           style={{ background: track }}
         />
         <SliderPrimitive.Thumb
+          getAriaLabel={ariaLabel ? () => ariaLabel : undefined}
           className="border-background ring-ring/50 block size-7 rounded-full border-[3px] shadow-md outline-none focus-visible:ring-3"
           style={{ background: thumbColor }}
         />

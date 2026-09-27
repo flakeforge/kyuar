@@ -36,10 +36,11 @@ function saveBlob(blob: Blob) {
   URL.revokeObjectURL(url);
 }
 
-export function ActionBar({ editor, isTelegram }: { editor: EditorModel; isTelegram: boolean }) {
+export function ActionBar({ editor }: { editor: EditorModel }) {
   const t = useMessages();
   const [busy, setBusy] = useState<"download" | "share" | null>(null);
-  const { request, fits, surprise, halftone } = editor;
+  const { request, fits, surprise, halftone, isEmpty } = editor;
+  const ready = fits && !isEmpty;
   const hasImages = Boolean(request.logo || request.halftone);
 
   async function downloadInTelegram(initData: string) {
@@ -74,6 +75,7 @@ export function ActionBar({ editor, isTelegram }: { editor: EditorModel; isTeleg
             : undefined,
         });
         saveBlob(await svgToPngBlob(svg, 1024));
+        toast.add({ title: t.actions.downloaded, type: "success" });
       }
       haptic("success");
     } catch {
@@ -110,7 +112,7 @@ export function ActionBar({ editor, isTelegram }: { editor: EditorModel; isTeleg
           variant="float"
           size="fab"
           aria-label={t.actions.download}
-          disabled={!fits || busy !== null}
+          disabled={!ready || busy !== null}
           onClick={() => void onDownload()}
         >
           {busy === "download" ? <Spinner /> : <DownloadIcon />}
@@ -120,8 +122,13 @@ export function ActionBar({ editor, isTelegram }: { editor: EditorModel; isTeleg
           aria-label={t.actions.surprise}
           className="shadow-foreground/40 shadow-[0_12px_28px_-12px]"
           onClick={() => {
-            surprise();
+            const undo = surprise();
             haptic("impact");
+            toast.add({
+              title: t.actions.surprised,
+              timeout: 4000,
+              actionProps: { children: t.actions.undo, onClick: undo },
+            });
           }}
         >
           <ShuffleIcon />
@@ -130,7 +137,7 @@ export function ActionBar({ editor, isTelegram }: { editor: EditorModel; isTeleg
           variant="float"
           size="fab"
           aria-label={busy === "share" ? t.actions.sharing : t.actions.share}
-          disabled={!fits || busy !== null || !isTelegram}
+          disabled={!ready || busy !== null}
           onClick={() => void onShare()}
         >
           {busy === "share" ? <Spinner /> : <ShareIcon />}

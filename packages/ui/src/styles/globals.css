@@ -62,8 +62,8 @@
   --accent-foreground: color-mix(in oklab, var(--theme) 30%, black);
   --destructive: oklch(0.577 0.245 27.325);
   --border: color-mix(in oklab, var(--theme) 28%, white);
-  --input: color-mix(in oklab, var(--theme) 28%, white);
-  --ring: var(--theme);
+  --input: color-mix(in oklab, var(--theme) 45%, white);
+  --ring: color-mix(in oklab, var(--theme) 30%, black);
   --radius: 1.125rem;
 }
 
@@ -79,6 +79,7 @@
 
   html {
     scroll-padding-bottom: 7rem;
+    --toast-inset-bottom: calc(max(env(safe-area-inset-bottom), 1rem) + 4.5rem);
   }
 
   body {

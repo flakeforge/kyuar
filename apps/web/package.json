@@ -16,15 +16,15 @@
     "@kyuar/qr": "workspace:*",
     "@kyuar/shared": "workspace:*",
     "@kyuar/ui": "workspace:*",
-    "@redis/client": "^6.2.1",
+    "@redis/client": "^6.3.0",
     "@resvg/resvg-js": "^2.6.2",
     "@tma.js/sdk-react": "^3.0.23",
     "grammy": "^1.46.0",
-    "lucide-react": "^1.48.0",
-    "next": "^16.3.6",
+    "lucide-react": "^1.49.0",
+    "next": "^16.3.8",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "sharp": "^0.35.4"
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",

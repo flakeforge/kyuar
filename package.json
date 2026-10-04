@@ -20,13 +20,13 @@
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.3",
     "@types/node": "^24.10.1",
-    "knip": "^6.38.0",
-    "lefthook": "^2.1.14",
+    "knip": "^6.39.0",
+    "lefthook": "^2.1.15",
     "oxfmt": "^0.68.0",
     "oxlint": "^1.83.0",
     "react-doctor": "^0.9.14",
     "typescript": "^6.0.3",
-    "vitest": "^5.0.2"
+    "vitest": "^5.0.3"
   },
   "engines": {
     "node": ">=24"

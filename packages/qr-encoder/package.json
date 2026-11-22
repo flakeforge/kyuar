@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "qr": "0.7.0",
+    "qr": "0.7.2",
     "typescript": "^6.0.3"
   }
 }
